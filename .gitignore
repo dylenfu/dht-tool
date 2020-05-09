@@ -1,4 +1,5 @@
 .idea
 log
 wallet.dat
-*.dht-tool
+dht-tool
+dht-tool-*
