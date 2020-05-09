@@ -17,3 +17,26 @@
  */
 
 package methods
+
+import (
+	"encoding/json"
+	"io/ioutil"
+	"time"
+)
+
+func getParamsFromJsonFile(fileName string, data interface{}) error {
+	bz, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(bz, data)
+}
+
+func dispatch(sec int) {
+	expire := time.Duration(sec) * time.Second
+	stop := make(chan struct{})
+	tr.Add(expire, func() {
+		stop <- struct{}{}
+	})
+	<-stop
+}

@@ -20,10 +20,67 @@ package methods
 
 import (
 	log4 "github.com/alecthomas/log4go"
+	"github.com/ontio/ontology-tool/common"
+	"github.com/ontio/ontology-tool/config"
+	"github.com/ontio/ontology-tool/p2pserver/net/netserver"
+	"github.com/ontio/ontology-tool/p2pserver/net/protocol"
+	"github.com/ontio/ontology-tool/p2pserver/protocols"
+	"github.com/ontio/ontology-tool/utils/timer"
+)
+
+var (
+	ns *netserver.NetServer
+	tr *timer.Timer
 )
 
 func Demo() bool {
 	log4.Info("hello, dht demo")
+	return true
+}
+
+func setup(protocol p2p.Protocol) {
+	var err error
+
+	if ns, err = netserver.NewNetServer(protocol, config.DefConfig.Net); err != nil {
+		log4.Crashf("[NewNetServer] crashed, err %s", err)
+	}
+	if err = ns.Start(); err != nil {
+		log4.Crashf("start netserver failed, err %s", err)
+	}
+
+	tr = timer.NewTimer(2)
+}
+
+func Handshake() bool {
+
+	// 1. get params from json file
+	var params struct {
+		Remote        string
+		HeartbeatTime int
+	}
+	if err := getParamsFromJsonFile("./params/Handshake.json", &params); err != nil {
+		log4.Error("%s", err)
+		return false
+	}
+
+	// 2. set common params
+	common.SetHandshakeDuraion(10)
+	common.SetHandshakeLevel(common.HandshakeNormal)
+	common.SetHeartbeatBlockHeight(358)
+
+	// 3. setup p2p.protocols
+	protocol := protocols.NewOnlyHeartbeatMsgHandler()
+	setup(protocol)
+
+	// 4. connect and handshake
+	if err := ns.Connect(params.Remote); err != nil {
+		log4.Debug("connecting to %s failed, err: %s", params.Remote, err)
+		return false
+	}
+
+	// 5. dispatch
+	dispatch(params.HeartbeatTime)
+	log4.Info("handshake end!")
 
 	return true
 }

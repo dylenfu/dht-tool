@@ -39,7 +39,7 @@ var (
 func init() {
 	flag.StringVar(&Config, "cfg", "./config.json", "Config of ontology-tool")
 	flag.StringVar(&LogConfig, "lfg", "./log4go.xml", "Log config of ontology-tool")
-	flag.StringVar(&Methods, "t", "", "methods to run. use ',' to split methods")
+	flag.StringVar(&Methods, "t", "handshake", "methods to run. use ',' to split methods")
 	flag.Parse()
 }
 

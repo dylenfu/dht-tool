@@ -19,21 +19,18 @@ package connect_controller
 
 import (
 	"fmt"
-	"net"
-	"sort"
-	"sync"
-	"testing"
-	"time"
-
 	"github.com/ontio/ontology-tool/p2pserver/common"
 	"github.com/ontio/ontology-tool/p2pserver/handshake"
 	"github.com/ontio/ontology-tool/p2pserver/peer"
 	"github.com/stretchr/testify/assert"
+	"net"
+	"sort"
+	"sync"
+	"testing"
 )
 
 func init() {
 	common.Difficulty = 1
-	handshake.HANDSHAKE_DURATION = 10 * time.Second
 }
 
 type Transport struct {

@@ -24,4 +24,5 @@ import (
 
 func init() {
 	core.OntTool.RegMethod("demo", Demo)
+	core.OntTool.RegMethod("handshake", Handshake)
 }

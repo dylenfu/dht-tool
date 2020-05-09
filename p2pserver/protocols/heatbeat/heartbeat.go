@@ -21,27 +21,27 @@ import (
 	"time"
 
 	log4 "github.com/alecthomas/log4go"
+	tcm "github.com/ontio/ontology-tool/common"
 	"github.com/ontio/ontology-tool/p2pserver/common"
-	msgpack "github.com/ontio/ontology-tool/p2pserver/message/msg_pack"
+	"github.com/ontio/ontology-tool/p2pserver/message/msg_pack"
 	"github.com/ontio/ontology-tool/p2pserver/message/types"
-	p2p "github.com/ontio/ontology-tool/p2pserver/net/protocol"
+	"github.com/ontio/ontology-tool/p2pserver/net/protocol"
 	"github.com/ontio/ontology/common/config"
-	"github.com/ontio/ontology/core/ledger"
 )
 
 type HeartBeat struct {
 	net    p2p.P2P
 	id     common.PeerId
 	quit   chan bool
-	ledger *ledger.Ledger //ledger
+	height uint64
 }
 
-func NewHeartBeat(net p2p.P2P, ld *ledger.Ledger) *HeartBeat {
+func NewHeartBeat(net p2p.P2P) *HeartBeat {
 	return &HeartBeat{
 		id:     net.GetID(),
 		net:    net,
 		quit:   make(chan bool),
-		ledger: ld,
+		height: tcm.HeartbeatBlockHeight,
 	}
 }
 
@@ -68,8 +68,11 @@ func (this *HeartBeat) heartBeatService() {
 	}
 }
 
+// mark:
 func (this *HeartBeat) ping() {
-	height := this.ledger.GetCurrentBlockHeight()
+	height := this.height
+	// todo how to increase block height
+	//atomic.AddUint64(&this.height, 1)
 	ping := msgpack.NewPingMsg(uint64(height))
 	go this.net.Broadcast(ping)
 }
@@ -93,7 +96,7 @@ func (this *HeartBeat) PingHandle(ctx *p2p.Context, ping *types.Ping) {
 	remotePeer.SetHeight(ping.Height)
 	p2p := ctx.Network()
 
-	height := ledger.DefLedger.GetCurrentBlockHeight()
+	height := this.height
 	p2p.SetHeight(uint64(height))
 	msg := msgpack.NewPongMsg(uint64(height))
 

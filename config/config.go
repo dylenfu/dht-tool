@@ -22,7 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	log4 "github.com/alecthomas/log4go"
-	"github.com/ontio/ontology/common/config"
+	cmf "github.com/ontio/ontology/common/config"
 	"io/ioutil"
 	"os"
 )
@@ -32,7 +32,7 @@ var DefConfig = NewDHTConfig()
 type DHTConfig struct {
 	Seed []string
 	Sync []string
-	Net  *config.P2PNodeConfig
+	Net  *cmf.P2PNodeConfig
 	Sdk  *SDKConfig
 }
 
@@ -70,6 +70,7 @@ func (this *DHTConfig) loadConfig(fileName string) error {
 	if err != nil {
 		return fmt.Errorf("json.Unmarshal TestConfig:%s error:%s", data, err)
 	}
+	cmf.DefConfig.P2PNode = this.Net
 	return nil
 }
 

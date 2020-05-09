@@ -28,7 +28,6 @@ import (
 	p2pnet "github.com/ontio/ontology-tool/p2pserver/net/protocol"
 	"github.com/ontio/ontology-tool/p2pserver/protocols"
 	"github.com/ontio/ontology/common/config"
-	"github.com/ontio/ontology/core/ledger"
 )
 
 //P2PServer control all network activities
@@ -37,10 +36,7 @@ type P2PServer struct {
 }
 
 //NewServer return a new p2pserver according to the pubkey
-func NewServer() (*P2PServer, error) {
-	ld := ledger.DefLedger
-
-	protocol := protocols.NewMsgHandler(ld)
+func NewServer(protocol *protocols.MsgHandler) (*P2PServer, error) {
 	n, err := netserver.NewNetServer(protocol, config.DefConfig.P2PNode)
 	if err != nil {
 		return nil, err

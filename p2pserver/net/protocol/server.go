@@ -27,7 +27,7 @@ import (
 
 //P2P represent the net interface of p2p package
 type P2P interface {
-	Connect(addr string)
+	Connect(addr string) error
 	GetHostInfo() *peer.PeerInfo
 	GetID() common.PeerId
 	GetNeighbors() []*peer.Peer

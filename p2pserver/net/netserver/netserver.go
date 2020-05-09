@@ -213,11 +213,8 @@ func (this *NetServer) Send(p *peer.Peer, msg types.Message) error {
 }
 
 //Connect used to connect net address under sync or cons mode
-func (this *NetServer) Connect(addr string) {
-	err := this.connect(addr)
-	if err != nil {
-		log4.Debug("%s connecting to %s failed, err: %s", this.base.Addr, addr, err)
-	}
+func (this *NetServer) Connect(addr string) error {
+	return this.connect(addr)
 }
 
 //Connect used to connect net address under sync or cons mode

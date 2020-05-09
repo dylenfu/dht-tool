@@ -19,21 +19,19 @@ package handshake
 
 import (
 	"fmt"
-	"net"
-	"time"
-
 	"github.com/blang/semver"
+	tcm "github.com/ontio/ontology-tool/common"
 	"github.com/ontio/ontology-tool/p2pserver/common"
 	"github.com/ontio/ontology-tool/p2pserver/message/types"
 	"github.com/ontio/ontology-tool/p2pserver/peer"
 	common2 "github.com/ontio/ontology/common"
+	"net"
+	"time"
 )
-
-var HANDSHAKE_DURATION = 10 * time.Second // handshake time can not exceed this duration, or will treat as attack.
 
 func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Conn) (*peer.PeerInfo, error) {
 	version := newVersion(info)
-	if err := conn.SetDeadline(time.Now().Add(HANDSHAKE_DURATION)); err != nil {
+	if err := conn.SetDeadline(time.Now().Add(tcm.HandshakeDuration)); err != nil {
 		return nil, err
 	}
 	defer func() {
@@ -45,6 +43,10 @@ func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 	if err != nil {
 		return nil, err
 	}
+	// mark:
+	if tcm.StopHandshake(tcm.Handshake_StopAfterSendVersion) {
+		return nil, fmt.Errorf("client handshake stopped after send version")
+	}
 
 	// 2. read version
 	msg, _, err := types.ReadMessage(conn)
@@ -55,6 +57,10 @@ func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 	if !ok {
 		return nil, fmt.Errorf("expected version message, but got message type: %s", msg.CmdType())
 	}
+	// mark:
+	if tcm.StopHandshake(tcm.Handshake_StopAfterReceiveVersion) {
+		return nil, fmt.Errorf("client handshake stopped after receive version")
+	}
 
 	// 3. update kadId
 	kid := common.PseudoPeerIdFromUint64(receivedVersion.P.Nonce)
@@ -63,6 +69,11 @@ func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 		if err != nil {
 			return nil, err
 		}
+		// mark:
+		if tcm.StopHandshake(tcm.Handshake_StopAfterUpdateKad) {
+			return nil, fmt.Errorf("client handshake stopped after update kad")
+		}
+
 		// 4. read kadkeyid
 		msg, _, err = types.ReadMessage(conn)
 		if err != nil {
@@ -71,6 +82,10 @@ func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 		kadKeyId, ok := msg.(*types.UpdatePeerKeyId)
 		if !ok {
 			return nil, fmt.Errorf("handshake failed, expect kad id message, got %s", msg.CmdType())
+		}
+		// mark:
+		if tcm.StopHandshake(tcm.Handshake_StopAfterReadKad) {
+			return nil, fmt.Errorf("client handshake stopped after read kad")
 		}
 
 		kid = kadKeyId.KadKeyId.Id
@@ -81,13 +96,16 @@ func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 	if err != nil {
 		return nil, err
 	}
+	// mark:
+	if tcm.StopHandshake(tcm.Handshake_StopAfterSendAck) {
+		return nil, fmt.Errorf("client handshake stopped after send ack")
+	}
 
+	// 6. receive verack
 	msg, _, err = types.ReadMessage(conn)
 	if err != nil {
 		return nil, err
 	}
-
-	// 6. receive verack
 	if _, ok := msg.(*types.VerACK); !ok {
 		return nil, fmt.Errorf("handshake failed, expect verack message, got %s", msg.CmdType())
 	}
@@ -97,7 +115,7 @@ func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 
 func HandshakeServer(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Conn) (*peer.PeerInfo, error) {
 	ver := newVersion(info)
-	if err := conn.SetDeadline(time.Now().Add(HANDSHAKE_DURATION)); err != nil {
+	if err := conn.SetDeadline(time.Now().Add(tcm.HandshakeDuration)); err != nil {
 		return nil, err
 	}
 	defer func() {
@@ -113,11 +131,19 @@ func HandshakeServer(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 		return nil, fmt.Errorf("[HandshakeServer] expected version message")
 	}
 	version := msg.(*types.Version)
+	// mark:
+	if tcm.StopHandshake(tcm.Handshake_StopAfterReceiveVersion) {
+		return nil, fmt.Errorf("server handshake stopped after receive version")
+	}
 
 	// 2. sendMsg version
 	err = sendMsg(conn, ver)
 	if err != nil {
 		return nil, err
+	}
+	// mark:
+	if tcm.StopHandshake(tcm.Handshake_StopAfterSendVersion) {
+		return nil, fmt.Errorf("server handshake stopped after send version")
 	}
 
 	// 3. read update kadkey id
@@ -132,10 +158,19 @@ func HandshakeServer(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 			return nil, fmt.Errorf("[HandshakeServer] expected update kadkeyid message")
 		}
 		kid = kadkeyId.KadKeyId.Id
+		// mark:
+		if tcm.StopHandshake(tcm.Handshake_StopAfterReadKad) {
+			return nil, fmt.Errorf("server handshake stopped after read kad")
+		}
+
 		// 4. sendMsg update kadkey id
 		err = sendMsg(conn, &types.UpdatePeerKeyId{KadKeyId: selfId})
 		if err != nil {
 			return nil, err
+		}
+		// mark:
+		if tcm.StopHandshake(tcm.Handshake_StopAfterUpdateKad) {
+			return nil, fmt.Errorf("server handshake stopped after update kad")
 		}
 	}
 
@@ -146,6 +181,10 @@ func HandshakeServer(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 	}
 	if msg.CmdType() != common.VERACK_TYPE {
 		return nil, fmt.Errorf("[HandshakeServer] expected version ack message")
+	}
+	// mark:
+	if tcm.StopHandshake(tcm.Handshake_StopAfterReadAck) {
+		return nil, fmt.Errorf("server handshake stopped after read ack")
 	}
 
 	// 6. sendMsg ack

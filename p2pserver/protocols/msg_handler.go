@@ -69,7 +69,8 @@ func (self *MsgHandler) start(net p2p.P2P) {
 	self.discovery = discovery.NewDiscovery(net, config.DefConfig.P2PNode.ReservedCfg.MaskPeers, 0)
 	seeds := config.DefConfig.Genesis.SeedList
 	self.bootstrap = bootstrap.NewBootstrapService(net, seeds)
-	self.heatBeat = heatbeat.NewHeartBeat(net, self.ledger)
+	// mark:
+	self.heatBeat = heatbeat.NewHeartBeat(net)
 	self.persistRecentPeerService = recent_peers.NewPersistRecentPeerService(net)
 	go self.persistRecentPeerService.Start()
 	go self.blockSync.Start()
