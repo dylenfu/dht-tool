@@ -21,9 +21,9 @@ package dht
 import (
 	"time"
 
-	"github.com/ontio/ontology/common/log"
-	"github.com/ontio/ontology/p2pserver/common"
-	kb "github.com/ontio/ontology/p2pserver/dht/kbucket"
+	log4 "github.com/alecthomas/log4go"
+	"github.com/ontio/ontology-tool/p2pserver/common"
+	kb "github.com/ontio/ontology-tool/p2pserver/dht/kbucket"
 )
 
 // Pool size is the number of nodes used for group find/set RPC calls
@@ -55,11 +55,11 @@ func NewDHT(id common.PeerId) *DHT {
 	rt := kb.NewRoutingTable(bucketSize, id)
 
 	rt.PeerAdded = func(p common.PeerId) {
-		log.Debugf("dht: peer: %d added to dht", p)
+		log4.Debug("dht: peer: %d added to dht", p)
 	}
 
 	rt.PeerRemoved = func(p common.PeerId) {
-		log.Debugf("dht: peer: %d removed from dht", p)
+		log4.Debug("dht: peer: %d removed from dht", p)
 	}
 
 	return &DHT{

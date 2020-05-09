@@ -25,10 +25,10 @@ import (
 	"net"
 	"time"
 
+	log4 "github.com/alecthomas/log4go"
+	"github.com/ontio/ontology-tool/p2pserver/common"
+	"github.com/ontio/ontology-tool/p2pserver/message/types"
 	comm "github.com/ontio/ontology/common"
-	"github.com/ontio/ontology/common/log"
-	"github.com/ontio/ontology/p2pserver/common"
-	"github.com/ontio/ontology/p2pserver/message/types"
 )
 
 //Link used to establish
@@ -109,7 +109,7 @@ func (this *Link) Rx() {
 	for {
 		msg, payloadSize, err := types.ReadMessage(reader)
 		if err != nil {
-			log.Infof("[p2p]error read from %s :%s", this.GetAddr(), err.Error())
+			log4.Info("[p2p]error read from %s :%s", this.GetAddr(), err.Error())
 			break
 		}
 
@@ -117,7 +117,7 @@ func (this *Link) Rx() {
 		this.UpdateRXTime(t)
 
 		if !this.needSendMsg(msg) {
-			log.Debugf("skip handle msgType:%s from:%d", msg.CmdType(), this.id)
+			log4.Debug("skip handle msgType:%s from:%d", msg.CmdType(), this.id)
 			continue
 		}
 
@@ -155,7 +155,7 @@ func (this *Link) SendRaw(rawPacket []byte) error {
 		return errors.New("[p2p]tx link invalid")
 	}
 	nByteCnt := len(rawPacket)
-	log.Tracef("[p2p]TX buf length: %d\n", nByteCnt)
+	log4.Debug("[p2p]TX buf length: %d", nByteCnt)
 
 	nCount := nByteCnt / common.PER_SEND_LEN
 	if nCount == 0 {
@@ -164,7 +164,7 @@ func (this *Link) SendRaw(rawPacket []byte) error {
 	_ = conn.SetWriteDeadline(time.Now().Add(time.Duration(nCount*common.WRITE_DEADLINE) * time.Second))
 	_, err := conn.Write(rawPacket)
 	if err != nil {
-		log.Infof("[p2p] error sending messge to %s :%s", this.GetAddr(), err.Error())
+		log4.Info("[p2p] error sending messge to %s :%s", this.GetAddr(), err.Error())
 		this.CloseConn()
 		return err
 	}

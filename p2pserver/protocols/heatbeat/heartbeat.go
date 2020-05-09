@@ -20,13 +20,13 @@ package heatbeat
 import (
 	"time"
 
+	log4 "github.com/alecthomas/log4go"
+	"github.com/ontio/ontology-tool/p2pserver/common"
+	msgpack "github.com/ontio/ontology-tool/p2pserver/message/msg_pack"
+	"github.com/ontio/ontology-tool/p2pserver/message/types"
+	p2p "github.com/ontio/ontology-tool/p2pserver/net/protocol"
 	"github.com/ontio/ontology/common/config"
-	"github.com/ontio/ontology/common/log"
 	"github.com/ontio/ontology/core/ledger"
-	"github.com/ontio/ontology/p2pserver/common"
-	msgpack "github.com/ontio/ontology/p2pserver/message/msg_pack"
-	"github.com/ontio/ontology/p2pserver/message/types"
-	p2p "github.com/ontio/ontology/p2pserver/net/protocol"
 )
 
 type HeartBeat struct {
@@ -82,7 +82,7 @@ func (this *HeartBeat) timeout() {
 		t := p.GetContactTime()
 		if t.Before(time.Now().Add(-1 * time.Second *
 			time.Duration(periodTime) * common.KEEPALIVE_TIMEOUT)) {
-			log.Warnf("[p2p]keep alive timeout!!!lost remote peer %d - %s from %s", p.GetID(), p.Link.GetAddr(), t.String())
+			log4.Warn("[p2p]keep alive timeout!!!lost remote peer %d - %s from %s", p.GetID(), p.Link.GetAddr(), t.String())
 			p.Close()
 		}
 	}
@@ -99,7 +99,7 @@ func (this *HeartBeat) PingHandle(ctx *p2p.Context, ping *types.Ping) {
 
 	err := remotePeer.Send(msg)
 	if err != nil {
-		log.Warn(err)
+		log4.Warn(err)
 	}
 }
 

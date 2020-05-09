@@ -23,12 +23,12 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/ontio/ontology/p2pserver/peer"
+	"github.com/ontio/ontology-tool/p2pserver/peer"
 
+	log4 "github.com/alecthomas/log4go"
+	"github.com/ontio/ontology-tool/p2pserver/common"
+	"github.com/ontio/ontology-tool/p2pserver/message/types"
 	comm "github.com/ontio/ontology/common"
-	"github.com/ontio/ontology/common/log"
-	"github.com/ontio/ontology/p2pserver/common"
-	"github.com/ontio/ontology/p2pserver/message/types"
 )
 
 // Conn is a net.Conn wrapper to do some clean up when Close.
@@ -50,11 +50,11 @@ func (self *Conn) Close() error {
 
 	n := self.netServer.Np.List[self.id]
 	if n.Peer == nil {
-		log.Fatalf("connection %s not in net server", self.id.ToHexString())
+		log4.Crashf("connection %s not in net server", self.id.ToHexString())
 	} else if n.session == self.session { // connection not replaced
 		delete(self.netServer.Np.List, self.id)
 		// need handle asynchronously since we hold Np.Lock
-		log.Infof("remove peer %s from net server", self.id.ToHexString())
+		log4.Info("remove peer %s from net server", self.id.ToHexString())
 		go self.netServer.notifyPeerDisconnected(n.Peer.Info)
 	}
 

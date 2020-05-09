@@ -23,8 +23,8 @@ import (
 	"io"
 	"testing"
 
+	"github.com/ontio/ontology-tool/p2pserver/common"
 	common2 "github.com/ontio/ontology/common"
-	"github.com/ontio/ontology/p2pserver/common"
 	"github.com/stretchr/testify/assert"
 )
 

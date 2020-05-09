@@ -21,8 +21,8 @@ package types
 import (
 	"io"
 
+	ncomm "github.com/ontio/ontology-tool/p2pserver/common"
 	"github.com/ontio/ontology/common"
-	ncomm "github.com/ontio/ontology/p2pserver/common"
 )
 
 type FindNodeReq struct {

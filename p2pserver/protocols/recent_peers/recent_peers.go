@@ -24,11 +24,11 @@ import (
 	"sync"
 	"time"
 
+	log4 "github.com/alecthomas/log4go"
+	"github.com/ontio/ontology-tool/p2pserver/common"
+	p2p "github.com/ontio/ontology-tool/p2pserver/net/protocol"
 	common2 "github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/common/config"
-	"github.com/ontio/ontology/common/log"
-	"github.com/ontio/ontology/p2pserver/common"
-	p2p "github.com/ontio/ontology/p2pserver/net/protocol"
 )
 
 type PersistRecentPeerService struct {
@@ -93,12 +93,12 @@ func (this *PersistRecentPeerService) saveToFile() {
 	}
 	buf, err := json.Marshal(temp)
 	if err != nil {
-		log.Warn("[p2p]package recent peer fail: ", err)
+		log4.Warn("[p2p]package recent peer fail: ", err)
 		return
 	}
 	err = ioutil.WriteFile(common.RECENT_FILE_NAME, buf, os.ModePerm)
 	if err != nil {
-		log.Warn("[p2p]write recent peer fail: ", err)
+		log4.Warn("[p2p]write recent peer fail: ", err)
 	}
 }
 
@@ -118,14 +118,14 @@ func (this *PersistRecentPeerService) loadRecentPeers() {
 	if common2.FileExisted(common.RECENT_FILE_NAME) {
 		buf, err := ioutil.ReadFile(common.RECENT_FILE_NAME)
 		if err != nil {
-			log.Warn("[p2p]read %s fail:%s, connect recent peers cancel", common.RECENT_FILE_NAME, err.Error())
+			log4.Warn("[p2p]read %s fail:%s, connect recent peers cancel", common.RECENT_FILE_NAME, err.Error())
 			return
 		}
 
 		temp := make(map[uint32][]string)
 		err = json.Unmarshal(buf, &temp)
 		if err != nil {
-			log.Warn("[p2p]parse recent peer file fail: ", err)
+			log4.Warn("[p2p]parse recent peer file fail: ", err)
 			return
 		}
 		for networkId, addrs := range temp {
@@ -149,7 +149,7 @@ func (this *PersistRecentPeerService) Start() {
 func (this *PersistRecentPeerService) tryRecentPeers() {
 	netID := config.DefConfig.P2PNode.NetworkMagic
 	if len(this.recentPeers[netID]) > 0 {
-		log.Info("[p2p] try to connect recent peer")
+		log4.Info("[p2p] try to connect recent peer")
 	}
 	for _, v := range this.recentPeers[netID] {
 		go this.net.Connect(v.Addr)

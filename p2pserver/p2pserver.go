@@ -22,13 +22,13 @@ import (
 	"strings"
 	"time"
 
+	log4 "github.com/alecthomas/log4go"
+	"github.com/ontio/ontology-tool/p2pserver/common"
+	"github.com/ontio/ontology-tool/p2pserver/net/netserver"
+	p2pnet "github.com/ontio/ontology-tool/p2pserver/net/protocol"
+	"github.com/ontio/ontology-tool/p2pserver/protocols"
 	"github.com/ontio/ontology/common/config"
-	"github.com/ontio/ontology/common/log"
 	"github.com/ontio/ontology/core/ledger"
-	"github.com/ontio/ontology/p2pserver/common"
-	"github.com/ontio/ontology/p2pserver/net/netserver"
-	p2pnet "github.com/ontio/ontology/p2pserver/net/protocol"
-	"github.com/ontio/ontology/p2pserver/protocols"
 )
 
 //P2PServer control all network activities
@@ -72,7 +72,7 @@ func (this *P2PServer) GetNetwork() p2pnet.P2P {
 func (this *P2PServer) WaitForPeersStart() {
 	periodTime := config.DEFAULT_GEN_BLOCK_TIME / common.UPDATE_RATE_PER_BLOCK
 	for {
-		log.Info("[p2p]Wait for minimum connection...")
+		log4.Info("[p2p]Wait for minimum connection...")
 		if this.reachMinConnection() {
 			break
 		}

@@ -23,12 +23,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ontio/ontology/common/log"
-	"github.com/ontio/ontology/p2pserver/common"
-	msgpack "github.com/ontio/ontology/p2pserver/message/msg_pack"
-	"github.com/ontio/ontology/p2pserver/message/types"
-	p2p "github.com/ontio/ontology/p2pserver/net/protocol"
-	"github.com/ontio/ontology/p2pserver/peer"
+	log4 "github.com/alecthomas/log4go"
+	"github.com/ontio/ontology-tool/p2pserver/common"
+	msgpack "github.com/ontio/ontology-tool/p2pserver/message/msg_pack"
+	"github.com/ontio/ontology-tool/p2pserver/message/types"
+	p2p "github.com/ontio/ontology-tool/p2pserver/net/protocol"
+	"github.com/ontio/ontology-tool/p2pserver/peer"
 )
 
 const activeConnect = 4 // when connection num less than this value, we connect seeds node actively.
@@ -90,17 +90,17 @@ func (self *BootstrapService) connectSeeds() {
 	for _, n := range self.seeds {
 		ip, err := common.ParseIPAddr(n)
 		if err != nil {
-			log.Warnf("[p2p]seed peer %s address format is wrong", n)
+			log4.Warn("[p2p]seed peer %s address format is wrong", n)
 			continue
 		}
 		ns, err := net.LookupHost(ip)
 		if err != nil {
-			log.Warnf("[p2p]resolve err: %s", err.Error())
+			log4.Warn("[p2p]resolve err: %s", err.Error())
 			continue
 		}
 		port, err := common.ParseIPPort(n)
 		if err != nil {
-			log.Warnf("[p2p]seed peer %s address format is wrong", n)
+			log4.Warn("[p2p]seed peer %s address format is wrong", n)
 			continue
 		}
 		seedNodes = append(seedNodes, ns[0]+port)

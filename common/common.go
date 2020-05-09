@@ -38,23 +38,23 @@ import (
 var sdk = gosdk.NewOntologySdk()
 
 func Initialize() {
-	sdk.NewRpcClient().SetAddress(config.DefConfig.JsonRpcAddress)
+	sdk.NewRpcClient().SetAddress(config.DefConfig.Sdk.JsonRpcAddress)
 }
 
 func GetAccountByPassword(path string) (*gosdk.Account, bool) {
 	wallet, err := sdk.OpenWallet(path)
 	if err != nil {
-		log4.Error("open wallet error:", err)
+		log4.Logf(log4.ERROR, "open wallet error:", err)
 		return nil, false
 	}
 	pwd, err := password.GetPassword()
 	if err != nil {
-		log4.Error("getPassword error:", err)
+		log4.Logf(log4.ERROR, "getPassword error:", err)
 		return nil, false
 	}
 	user, err := wallet.GetDefaultAccount(pwd)
 	if err != nil {
-		log4.Error("getDefaultAccount error:", err)
+		log4.Logf(log4.ERROR, "getDefaultAccount error:", err)
 		return nil, false
 	}
 	return user, true
@@ -86,7 +86,7 @@ func InvokeNativeContractWithMultiSign(
 func WaitForBlock(sdk *gosdk.OntologySdk) bool {
 	_, err := sdk.WaitForGenerateBlock(30*time.Second, 1)
 	if err != nil {
-		log4.Error("WaitForGenerateBlock error:", err)
+		log4.Logf(log4.ERROR, "WaitForGenerateBlock error:", err)
 		return false
 	}
 	return true

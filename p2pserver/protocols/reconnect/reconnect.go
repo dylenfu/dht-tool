@@ -25,11 +25,11 @@ import (
 	"sync"
 	"time"
 
+	log4 "github.com/alecthomas/log4go"
+	"github.com/ontio/ontology-tool/p2pserver/common"
+	p2p "github.com/ontio/ontology-tool/p2pserver/net/protocol"
+	"github.com/ontio/ontology-tool/p2pserver/peer"
 	"github.com/ontio/ontology/common/config"
-	"github.com/ontio/ontology/common/log"
-	"github.com/ontio/ontology/p2pserver/common"
-	p2p "github.com/ontio/ontology/p2pserver/net/protocol"
-	"github.com/ontio/ontology/p2pserver/peer"
 )
 
 //ReconnectService contain addr need to reconnect
@@ -83,7 +83,7 @@ func getPeerListenAddr(p *peer.PeerInfo) (string, error) {
 func (self *ReconnectService) OnAddPeer(p *peer.PeerInfo) {
 	nodeAddr, err := getPeerListenAddr(p)
 	if err != nil {
-		log.Errorf("failed to parse addr: %s", p.Addr)
+		log4.Error("failed to parse addr: %s", p.Addr)
 		return
 	}
 	self.Lock()
@@ -94,7 +94,7 @@ func (self *ReconnectService) OnAddPeer(p *peer.PeerInfo) {
 func (self *ReconnectService) OnDelPeer(p *peer.PeerInfo) {
 	nodeAddr, err := getPeerListenAddr(p)
 	if err != nil {
-		log.Errorf("failed to parse addr: %s", p.Addr)
+		log4.Error("failed to parse addr: %s", p.Addr)
 		return
 	}
 	self.Lock()
@@ -106,7 +106,7 @@ func (this *ReconnectService) retryInactivePeer() {
 	net := this.net
 	connCount := net.GetOutConnRecordLen()
 	if connCount >= config.DefConfig.P2PNode.MaxConnOutBound {
-		log.Warnf("[p2p]Connect: out connections(%d) reach max limit(%d)", connCount,
+		log4.Warn("[p2p]Connect: out connections(%d) reach max limit(%d)", connCount,
 			config.DefConfig.P2PNode.MaxConnOutBound)
 		return
 	}
@@ -129,9 +129,9 @@ func (this *ReconnectService) retryInactivePeer() {
 		this.Unlock()
 		for _, addr := range addrs {
 			rand.Seed(time.Now().UnixNano())
-			log.Debug("[p2p]Try to reconnect peer, peer addr is ", addr)
+			log4.Debug("[p2p]Try to reconnect peer, peer addr is ", addr)
 			<-time.After(time.Duration(rand.Intn(common.CONN_MAX_BACK)) * time.Millisecond)
-			log.Debug("[p2p]Back off time`s up, start connect node")
+			log4.Debug("[p2p]Back off time`s up, start connect node")
 			net.Connect(addr)
 		}
 	}

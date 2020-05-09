@@ -27,11 +27,11 @@ import (
 	"sync"
 	"time"
 
+	log4 "github.com/alecthomas/log4go"
+	"github.com/ontio/ontology-tool/p2pserver/common"
+	conn "github.com/ontio/ontology-tool/p2pserver/link"
+	"github.com/ontio/ontology-tool/p2pserver/message/types"
 	comm "github.com/ontio/ontology/common"
-	"github.com/ontio/ontology/common/log"
-	"github.com/ontio/ontology/p2pserver/common"
-	conn "github.com/ontio/ontology/p2pserver/link"
-	"github.com/ontio/ontology/p2pserver/message/types"
 )
 
 // PeerInfo provides the basic information of a peer
@@ -103,15 +103,15 @@ func (self *PeerInfo) String() string {
 
 //DumpInfo print all information of peer
 func (this *Peer) DumpInfo() {
-	log.Debug("[p2p]Node Info:")
-	log.Debug("[p2p]\t id = ", this.GetID())
-	log.Debug("[p2p]\t addr = ", this.Info.Addr)
-	log.Debug("[p2p]\t version = ", this.GetVersion())
-	log.Debug("[p2p]\t services = ", this.GetServices())
-	log.Debug("[p2p]\t port = ", this.GetPort())
-	log.Debug("[p2p]\t relay = ", this.GetRelay())
-	log.Debug("[p2p]\t height = ", this.GetHeight())
-	log.Debug("[p2p]\t softVersion = ", this.GetSoftVersion())
+	log4.Debug("[p2p]Node Info:")
+	log4.Debug("[p2p]\t id = ", this.GetID())
+	log4.Debug("[p2p]\t addr = ", this.Info.Addr)
+	log4.Debug("[p2p]\t version = ", this.GetVersion())
+	log4.Debug("[p2p]\t services = ", this.GetServices())
+	log4.Debug("[p2p]\t port = ", this.GetPort())
+	log4.Debug("[p2p]\t relay = ", this.GetRelay())
+	log4.Debug("[p2p]\t height = ", this.GetHeight())
+	log4.Debug("[p2p]\t softVersion = ", this.GetSoftVersion())
 }
 
 //GetVersion return peer`s version
@@ -188,7 +188,7 @@ func (this *Peer) GetAddr16() ([16]byte, error) {
 	}
 	ip := net.ParseIP(addrIp).To16()
 	if ip == nil {
-		log.Warn("[p2p]parse ip address error\n", this.GetAddr())
+		log4.Warn("[p2p]parse ip address error\n", this.GetAddr())
 		return result, errors.New("[p2p]parse ip address error")
 	}
 

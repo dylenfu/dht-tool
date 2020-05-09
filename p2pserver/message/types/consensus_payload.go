@@ -23,10 +23,10 @@ import (
 	"io"
 
 	"github.com/ontio/ontology-crypto/keypair"
+	common2 "github.com/ontio/ontology-tool/p2pserver/common"
 	"github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/core/signature"
 	"github.com/ontio/ontology/errors"
-	common2 "github.com/ontio/ontology/p2pserver/common"
 )
 
 type ConsensusPayload struct {

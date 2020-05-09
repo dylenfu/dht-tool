@@ -22,15 +22,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ontio/ontology/common/log"
-	"github.com/ontio/ontology/p2pserver/common"
-	"github.com/ontio/ontology/p2pserver/message/types"
-	msgTypes "github.com/ontio/ontology/p2pserver/message/types"
-	"github.com/ontio/ontology/p2pserver/net/netserver"
-	p2p "github.com/ontio/ontology/p2pserver/net/protocol"
-	"github.com/ontio/ontology/p2pserver/peer"
-	"github.com/ontio/ontology/p2pserver/protocols/bootstrap"
-	"github.com/ontio/ontology/p2pserver/protocols/discovery"
+	log4 "github.com/alecthomas/log4go"
+	"github.com/ontio/ontology-tool/p2pserver/common"
+	"github.com/ontio/ontology-tool/p2pserver/message/types"
+	msgTypes "github.com/ontio/ontology-tool/p2pserver/message/types"
+	"github.com/ontio/ontology-tool/p2pserver/net/netserver"
+	p2p "github.com/ontio/ontology-tool/p2pserver/net/protocol"
+	"github.com/ontio/ontology-tool/p2pserver/peer"
+	"github.com/ontio/ontology-tool/p2pserver/protocols/bootstrap"
+	"github.com/ontio/ontology-tool/p2pserver/protocols/discovery"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -75,7 +75,7 @@ func (self *DiscoveryProtocol) HandleSystemMessage(net p2p.P2P, msg p2p.SystemMe
 }
 
 func (self *DiscoveryProtocol) HandlePeerMessage(ctx *p2p.Context, msg msgTypes.Message) {
-	log.Trace("[p2p]receive message", ctx.Sender().GetAddr(), ctx.Sender().GetID())
+	log4.Trace("[p2p]receive message", ctx.Sender().GetAddr(), ctx.Sender().GetID())
 	switch m := msg.(type) {
 	case *types.AddrReq:
 		self.discovery.AddrReqHandle(ctx)
@@ -85,7 +85,7 @@ func (self *DiscoveryProtocol) HandlePeerMessage(ctx *p2p.Context, msg msgTypes.
 		self.discovery.FindNodeHandle(ctx, m)
 	default:
 		msgType := msg.CmdType()
-		log.Warn("unknown message handler for the msg: ", msgType)
+		log4.Warn("unknown message handler for the msg: ", msgType)
 	}
 }
 
@@ -96,7 +96,7 @@ func TestDiscoveryNode(t *testing.T) {
 	var nodes []*netserver.NetServer
 	go seedNode.Start()
 	seedAddr := seedNode.GetHostInfo().Addr
-	log.Errorf("seed addr: %s", seedAddr)
+	log4.Error("seed addr: %s", seedAddr)
 	for i := 0; i < N; i++ {
 		node := NewDiscoveryNode([]string{seedAddr}, net)
 		net.AllowConnect(seedNode.GetHostInfo().Id, node.GetHostInfo().Id)
@@ -110,7 +110,7 @@ func TestDiscoveryNode(t *testing.T) {
 		assert.Equal(t, node.GetConnectionCnt(), uint32(1), fmt.Sprintf("node %d", i))
 	}
 
-	log.Info("start allow node connection")
+	log4.Info("start allow node connection")
 	for i := 0; i < len(nodes); i++ {
 		for j := i + 1; j < len(nodes); j++ {
 			net.AllowConnect(nodes[i].GetHostInfo().Id, nodes[j].GetHostInfo().Id)

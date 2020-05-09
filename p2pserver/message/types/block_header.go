@@ -22,9 +22,9 @@ import (
 	"fmt"
 	"io"
 
+	comm "github.com/ontio/ontology-tool/p2pserver/common"
 	"github.com/ontio/ontology/common"
 	ct "github.com/ontio/ontology/core/types"
-	comm "github.com/ontio/ontology/p2pserver/common"
 )
 
 type BlkHeader struct {

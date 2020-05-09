@@ -24,12 +24,11 @@ import (
 	"time"
 
 	"github.com/ontio/ontology-crypto/keypair"
+	"github.com/ontio/ontology-tool/p2pserver/common"
+	mt "github.com/ontio/ontology-tool/p2pserver/message/types"
 	"github.com/ontio/ontology/account"
 	comm "github.com/ontio/ontology/common"
-	"github.com/ontio/ontology/common/log"
 	ct "github.com/ontio/ontology/core/types"
-	"github.com/ontio/ontology/p2pserver/common"
-	mt "github.com/ontio/ontology/p2pserver/message/types"
 )
 
 var (
@@ -42,8 +41,6 @@ var (
 )
 
 func init() {
-	log.InitLog(log.InfoLog, log.Stdout)
-
 	cliLink = NewLink()
 	serverLink = NewLink()
 	id := common.PseudoPeerIdFromUint64(0x733936)

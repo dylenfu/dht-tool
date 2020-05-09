@@ -23,13 +23,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ontio/ontology/common/log"
-	"github.com/ontio/ontology/p2pserver/common"
-	"github.com/ontio/ontology/p2pserver/dht"
-	msgpack "github.com/ontio/ontology/p2pserver/message/msg_pack"
-	"github.com/ontio/ontology/p2pserver/message/types"
-	p2p "github.com/ontio/ontology/p2pserver/net/protocol"
-	"github.com/ontio/ontology/p2pserver/peer"
+	log4 "github.com/alecthomas/log4go"
+	"github.com/ontio/ontology-tool/p2pserver/common"
+	"github.com/ontio/ontology-tool/p2pserver/dht"
+	msgpack "github.com/ontio/ontology-tool/p2pserver/message/msg_pack"
+	"github.com/ontio/ontology-tool/p2pserver/message/types"
+	p2p "github.com/ontio/ontology-tool/p2pserver/net/protocol"
+	"github.com/ontio/ontology-tool/p2pserver/peer"
 	"github.com/scylladb/go-set/strset"
 )
 
@@ -79,10 +79,10 @@ func (self *Discovery) findSelf() {
 	for {
 		select {
 		case <-tick.C:
-			log.Debug("[dht] start to find myself")
+			log4.Debug("[dht] start to find myself")
 			closer := self.dht.BetterPeers(self.id, dht.AlphaValue)
 			for _, curPair := range closer {
-				log.Debugf("[dht] find closr peer %s", curPair.ID.ToHexString())
+				log4.Debug("[dht] find closr peer %s", curPair.ID.ToHexString())
 
 				var msg types.Message
 				if curPair.ID.IsPseudoPeerId() {
@@ -105,11 +105,11 @@ func (self *Discovery) refreshCPL() {
 		select {
 		case <-tick.C:
 			for curCPL := range self.dht.RouteTable().Buckets {
-				log.Debugf("[dht] start to refresh bucket: %d", curCPL)
+				log4.Debug("[dht] start to refresh bucket: %d", curCPL)
 				randPeer := self.dht.RouteTable().GenRandKadId(uint(curCPL))
 				closer := self.dht.BetterPeers(randPeer, dht.AlphaValue)
 				for _, pair := range closer {
-					log.Debugf("[dht] find closr peer %s", pair.ID.ToHexString())
+					log4.Debug("[dht] find closr peer %s", pair.ID.ToHexString())
 					var msg types.Message
 					if pair.ID.IsPseudoPeerId() {
 						msg = msgpack.NewAddrReq()
@@ -131,7 +131,7 @@ func (self *Discovery) FindNodeHandle(ctx *p2p.Context, freq *types.FindNodeReq)
 
 	var fresp types.FindNodeResp
 	// check the target is my self
-	log.Debugf("[dht] find node for peerid: %d", freq.TargetID)
+	log4.Debug("[dht] find node for peerid: %d", freq.TargetID)
 
 	if freq.TargetID == self.id {
 		fresp.Success = true
@@ -139,7 +139,7 @@ func (self *Discovery) FindNodeHandle(ctx *p2p.Context, freq *types.FindNodeReq)
 		// you've already connected with me so there's no need to give you my address
 		// omit the address
 		if err := remotePeer.Send(&fresp); err != nil {
-			log.Warn(err)
+			log4.Warn(err)
 		}
 		return
 	}
@@ -173,19 +173,19 @@ func (self *Discovery) FindNodeHandle(ctx *p2p.Context, freq *types.FindNodeReq)
 		fresp.CloserPeers = mskedAddrs
 	}
 
-	log.Debugf("[dht] find %d more closer peers:", len(fresp.CloserPeers))
+	log4.Debug("[dht] find %d more closer peers:", len(fresp.CloserPeers))
 	for _, curpa := range fresp.CloserPeers {
-		log.Debugf("    dht: pid: %s, addr: %s", curpa.ID.ToHexString(), curpa.Address)
+		log4.Debug("    dht: pid: %s, addr: %s", curpa.ID.ToHexString(), curpa.Address)
 	}
 
 	if err := remotePeer.Send(&fresp); err != nil {
-		log.Warn(err)
+		log4.Warn(err)
 	}
 }
 
 func (self *Discovery) FindNodeResponseHandle(ctx *p2p.Context, fresp *types.FindNodeResp) {
 	if fresp.Success {
-		log.Debugf("[p2p dht] %s", "find peer success, do nothing")
+		log4.Debug("[p2p dht] %s", "find peer success, do nothing")
 		return
 	}
 	p2p := ctx.Network()
@@ -199,7 +199,7 @@ func (self *Discovery) FindNodeResponseHandle(ctx *p2p.Context, fresp *types.Fin
 		if curpa.ID == p2p.GetID() {
 			continue
 		}
-		log.Debugf("[dht] try to connect to another peer by dht: %s ==> %s", curpa.ID.ToHexString(), curpa.Address)
+		log4.Debug("[dht] try to connect to another peer by dht: %s ==> %s", curpa.ID.ToHexString(), curpa.Address)
 		go p2p.Connect(curpa.Address)
 	}
 }
@@ -268,7 +268,7 @@ func (self *Discovery) AddrReqHandle(ctx *p2p.Context) {
 	err := remotePeer.Send(msg)
 
 	if err != nil {
-		log.Warn(err)
+		log4.Warn(err)
 		return
 	}
 }
@@ -286,7 +286,7 @@ func (self *Discovery) AddrHandle(ctx *p2p.Context, msg *types.Addr) {
 			continue
 		}
 
-		log.Debug("[p2p]connect ip address:", address)
+		log4.Debug("[p2p]connect ip address:", address)
 		go p2p.Connect(address)
 	}
 }

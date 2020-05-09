@@ -23,23 +23,23 @@ import (
 	"fmt"
 	"strconv"
 
-	lru "github.com/hashicorp/golang-lru"
+	log4 "github.com/alecthomas/log4go"
+	"github.com/hashicorp/golang-lru"
+	actor "github.com/ontio/ontology-tool/p2pserver/actor/req"
+	msgCommon "github.com/ontio/ontology-tool/p2pserver/common"
+	"github.com/ontio/ontology-tool/p2pserver/message/msg_pack"
+	msgTypes "github.com/ontio/ontology-tool/p2pserver/message/types"
+	"github.com/ontio/ontology-tool/p2pserver/net/protocol"
+	"github.com/ontio/ontology-tool/p2pserver/protocols/block_sync"
+	"github.com/ontio/ontology-tool/p2pserver/protocols/bootstrap"
+	"github.com/ontio/ontology-tool/p2pserver/protocols/discovery"
+	"github.com/ontio/ontology-tool/p2pserver/protocols/heatbeat"
+	"github.com/ontio/ontology-tool/p2pserver/protocols/recent_peers"
+	"github.com/ontio/ontology-tool/p2pserver/protocols/reconnect"
 	"github.com/ontio/ontology/common"
 	"github.com/ontio/ontology/common/config"
-	"github.com/ontio/ontology/common/log"
 	"github.com/ontio/ontology/core/ledger"
 	"github.com/ontio/ontology/core/types"
-	actor "github.com/ontio/ontology/p2pserver/actor/req"
-	msgCommon "github.com/ontio/ontology/p2pserver/common"
-	msgpack "github.com/ontio/ontology/p2pserver/message/msg_pack"
-	msgTypes "github.com/ontio/ontology/p2pserver/message/types"
-	p2p "github.com/ontio/ontology/p2pserver/net/protocol"
-	"github.com/ontio/ontology/p2pserver/protocols/block_sync"
-	"github.com/ontio/ontology/p2pserver/protocols/bootstrap"
-	"github.com/ontio/ontology/p2pserver/protocols/discovery"
-	"github.com/ontio/ontology/p2pserver/protocols/heatbeat"
-	"github.com/ontio/ontology/p2pserver/protocols/recent_peers"
-	"github.com/ontio/ontology/p2pserver/protocols/reconnect"
 )
 
 //respCache cache for some response data
@@ -110,7 +110,7 @@ func (self *MsgHandler) HandleSystemMessage(net p2p.P2P, msg p2p.SystemMessage) 
 }
 
 func (self *MsgHandler) HandlePeerMessage(ctx *p2p.Context, msg msgTypes.Message) {
-	log.Trace("[p2p]receive message", ctx.Sender().GetAddr(), ctx.Sender().GetID())
+	log4.Trace("[p2p]receive message", ctx.Sender().GetAddr(), ctx.Sender().GetID())
 	switch m := msg.(type) {
 	case *msgTypes.AddrReq:
 		self.discovery.AddrReqHandle(ctx)
@@ -139,13 +139,13 @@ func (self *MsgHandler) HandlePeerMessage(ctx *p2p.Context, msg msgTypes.Message
 	case *msgTypes.Inv:
 		InvHandle(ctx, m)
 	case *msgTypes.NotFound:
-		log.Debug("[p2p]receive notFound message, hash is ", m.Hash)
+		log4.Debug("[p2p]receive notFound message, hash is ", m.Hash)
 	default:
 		msgType := msg.CmdType()
 		if msgType == msgCommon.VERACK_TYPE || msgType == msgCommon.VERSION_TYPE {
-			log.Infof("receive message: %s from peer %s", msgType, ctx.Sender().GetAddr())
+			log4.Info("receive message: %s from peer %s", msgType, ctx.Sender().GetAddr())
 		} else {
-			log.Warn("unknown message handler for the msg: ", msgType)
+			log4.Warn("unknown message handler for the msg: ", msgType)
 		}
 	}
 }
@@ -157,14 +157,14 @@ func HeadersReqHandle(ctx *p2p.Context, headersReq *msgTypes.HeadersReq) {
 
 	headers, err := GetHeadersFromHash(startHash, stopHash)
 	if err != nil {
-		log.Warnf("HeadersReqHandle error: %s,startHash:%s,stopHash:%s", err.Error(), startHash.ToHexString(), stopHash.ToHexString())
+		log4.Warn("HeadersReqHandle error: %s,startHash:%s,stopHash:%s", err.Error(), startHash.ToHexString(), stopHash.ToHexString())
 		return
 	}
 	remotePeer := ctx.Sender()
 	msg := msgpack.NewHeaders(headers)
 	err = remotePeer.Send(msg)
 	if err != nil {
-		log.Warn(err)
+		log4.Warn(err)
 		return
 	}
 }
@@ -185,7 +185,7 @@ func (self *MsgHandler) blockHandle(ctx *p2p.Context, block *msgTypes.Block) {
 func ConsensusHandle(ctx *p2p.Context, consensus *msgTypes.Consensus) {
 	if actor.ConsensusPid != nil {
 		if err := consensus.Cons.Verify(); err != nil {
-			log.Warn(err)
+			log4.Warn(err)
 			return
 		}
 		consensus.Cons.PeerId = ctx.Sender().GetID()
@@ -199,7 +199,7 @@ func TransactionHandle(ctx *p2p.Context, trn *msgTypes.Trn) {
 		txCache.Add(trn.Txn.Hash(), nil)
 		actor.AddTransaction(trn.Txn)
 	} else {
-		log.Tracef("[p2p]receive duplicate Transaction message, txHash: %x\n", trn.Txn.Hash())
+		log4.Trace("[p2p]receive duplicate Transaction message, txHash: %x\n", trn.Txn.Hash())
 	}
 }
 
@@ -223,35 +223,35 @@ func DataReqHandle(ctx *p2p.Context, dataReq *msgTypes.DataReq) {
 			var merkleRoot common.Uint256
 			block, err := ledger.DefLedger.GetBlockByHash(hash)
 			if err != nil || block == nil || block.Header == nil {
-				log.Debug("[p2p]can't get block by hash: ", hash, " ,send not found message")
+				log4.Debug("[p2p]can't get block by hash: ", hash, " ,send not found message")
 				msg := msgpack.NewNotFound(hash)
 				err := remotePeer.Send(msg)
 				if err != nil {
-					log.Warn(err)
+					log4.Warn(err)
 					return
 				}
 				return
 			}
 			ccMsg, err := ledger.DefLedger.GetCrossChainMsg(block.Header.Height - 1)
 			if err != nil {
-				log.Debugf("[p2p]failed to get cross chain message at height %v, err %v",
+				log4.Debug("[p2p]failed to get cross chain message at height %v, err %v",
 					block.Header.Height-1, err)
 				msg := msgpack.NewNotFound(hash)
 				err := remotePeer.Send(msg)
 				if err != nil {
-					log.Warn(err)
+					log4.Warn(err)
 					return
 				}
 				return
 			}
 			merkleRoot, err = ledger.DefLedger.GetStateMerkleRoot(block.Header.Height)
 			if err != nil {
-				log.Debugf("[p2p]failed to get state merkel root at height %v, err %v",
+				log4.Debug("[p2p]failed to get state merkel root at height %v, err %v",
 					block.Header.Height, err)
 				msg := msgpack.NewNotFound(hash)
 				err := remotePeer.Send(msg)
 				if err != nil {
-					log.Warn(err)
+					log4.Warn(err)
 					return
 				}
 				return
@@ -261,26 +261,26 @@ func DataReqHandle(ctx *p2p.Context, dataReq *msgTypes.DataReq) {
 		}
 		err := remotePeer.Send(msg)
 		if err != nil {
-			log.Warn(err)
+			log4.Warn(err)
 			return
 		}
 
 	case common.TRANSACTION:
 		txn, err := ledger.DefLedger.GetTransaction(hash)
 		if err != nil {
-			log.Debug("[p2p]Can't get transaction by hash: ",
+			log4.Debug("[p2p]Can't get transaction by hash: ",
 				hash, " ,send not found message")
 			msg := msgpack.NewNotFound(hash)
 			err = remotePeer.Send(msg)
 			if err != nil {
-				log.Warn(err)
+				log4.Warn(err)
 				return
 			}
 		}
 		msg := msgpack.NewTxn(txn)
 		err = remotePeer.Send(msg)
 		if err != nil {
-			log.Warn(err)
+			log4.Warn(err)
 			return
 		}
 	}
@@ -291,18 +291,18 @@ func DataReqHandle(ctx *p2p.Context, dataReq *msgTypes.DataReq) {
 func InvHandle(ctx *p2p.Context, inv *msgTypes.Inv) {
 	remotePeer := ctx.Sender()
 	if len(inv.P.Blk) == 0 {
-		log.Debug("[p2p]empty inv payload in InvHandle")
+		log4.Debug("[p2p]empty inv payload in InvHandle")
 		return
 	}
 	var id common.Uint256
 	str := inv.P.Blk[0].ToHexString()
-	log.Debugf("[p2p]the inv type: 0x%x block len: %d, %s\n",
+	log4.Debug("[p2p]the inv type: 0x%x block len: %d, %s\n",
 		inv.P.InvType, len(inv.P.Blk), str)
 
 	invType := common.InventoryType(inv.P.InvType)
 	switch invType {
 	case common.TRANSACTION:
-		log.Debug("[p2p]receive transaction message", id)
+		log4.Debug("[p2p]receive transaction message", id)
 		// TODO check the ID queue
 		id = inv.P.Blk[0]
 		trn, err := ledger.DefLedger.GetTransaction(id)
@@ -310,43 +310,43 @@ func InvHandle(ctx *p2p.Context, inv *msgTypes.Inv) {
 			msg := msgpack.NewTxnDataReq(id)
 			err = remotePeer.Send(msg)
 			if err != nil {
-				log.Warn(err)
+				log4.Warn(err)
 				return
 			}
 		}
 	case common.BLOCK:
-		log.Debug("[p2p]receive block message")
+		log4.Debug("[p2p]receive block message")
 		for _, id = range inv.P.Blk {
-			log.Debug("[p2p]receive inv-block message, hash is ", id)
+			log4.Debug("[p2p]receive inv-block message, hash is ", id)
 			// TODO check the ID queue
 			isContainBlock, err := ledger.DefLedger.IsContainBlock(id)
 			if err != nil {
-				log.Warn(err)
+				log4.Warn(err)
 				return
 			}
 			if !isContainBlock && msgTypes.LastInvHash != id {
 				msgTypes.LastInvHash = id
 				// send the block request
-				log.Infof("[p2p]inv request block hash: %x", id)
+				log4.Info("[p2p]inv request block hash: %x", id)
 				msg := msgpack.NewBlkDataReq(id)
 				err = remotePeer.Send(msg)
 				if err != nil {
-					log.Warn(err)
+					log4.Warn(err)
 					return
 				}
 			}
 		}
 	case common.CONSENSUS:
-		log.Debug("[p2p]receive consensus message")
+		log4.Debug("[p2p]receive consensus message")
 		id = inv.P.Blk[0]
 		msg := msgpack.NewConsensusDataReq(id)
 		err := remotePeer.Send(msg)
 		if err != nil {
-			log.Warn(err)
+			log4.Warn(err)
 			return
 		}
 	default:
-		log.Warn("[p2p]receive unknown inventory message")
+		log4.Warn("[p2p]receive unknown inventory message")
 	}
 
 }
@@ -414,7 +414,7 @@ func GetHeadersFromHash(startHash common.Uint256, stopHash common.Uint256) ([]*t
 		hash := ledger.DefLedger.GetBlockHash(stopHeight + i)
 		header, err := ledger.DefLedger.GetHeaderByHash(hash)
 		if err != nil {
-			log.Debugf("[p2p]net_server GetBlockWithHeight failed with err=%s, hash=%x,height=%d\n", err.Error(), hash, stopHeight+i)
+			log4.Debug("[p2p]net_server GetBlockWithHeight failed with err=%s, hash=%x,height=%d\n", err.Error(), hash, stopHeight+i)
 			return nil, err
 		}
 

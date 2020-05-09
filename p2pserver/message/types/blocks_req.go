@@ -21,8 +21,8 @@ package types
 import (
 	"io"
 
+	"github.com/ontio/ontology-tool/p2pserver/common"
 	comm "github.com/ontio/ontology/common"
-	"github.com/ontio/ontology/p2pserver/common"
 )
 
 type BlocksReq struct {

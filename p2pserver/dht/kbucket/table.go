@@ -25,7 +25,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ontio/ontology/p2pserver/common"
+	"github.com/ontio/ontology-tool/p2pserver/common"
 )
 
 var ErrPeerRejectedHighLatency = errors.New("peer rejected; latency too high")

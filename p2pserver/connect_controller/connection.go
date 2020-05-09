@@ -20,8 +20,8 @@ package connect_controller
 import (
 	"net"
 
-	"github.com/ontio/ontology/common/log"
-	"github.com/ontio/ontology/p2pserver/common"
+	log4 "github.com/alecthomas/log4go"
+	"github.com/ontio/ontology-tool/p2pserver/common"
 )
 
 // Conn is a net.Conn wrapper to do some clean up when Close.
@@ -37,7 +37,7 @@ type Conn struct {
 // Close overwrite net.Conn
 // warning: this method will try to lock the controller, be carefull to avoid deadlock
 func (self *Conn) Close() error {
-	log.Infof("closing connection: peer %s, address: %s", self.kid.ToHexString(), self.addr)
+	log4.Info("closing connection: peer %s, address: %s", self.kid.ToHexString(), self.addr)
 
 	self.controller.removePeer(self)
 

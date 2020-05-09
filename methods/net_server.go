@@ -22,13 +22,13 @@ import (
 	"fmt"
 	log4 "github.com/alecthomas/log4go"
 	"github.com/ontio/ontology-tool/config"
+	"github.com/ontio/ontology-tool/p2pserver/common"
+	"github.com/ontio/ontology-tool/p2pserver/connect_controller"
+	"github.com/ontio/ontology-tool/p2pserver/message/types"
+	netsvr "github.com/ontio/ontology-tool/p2pserver/net/netserver"
 	commCfg "github.com/ontio/ontology/common/config"
-	"github.com/ontio/ontology/p2pserver/common"
-	"github.com/ontio/ontology/p2pserver/connect_controller"
-	"github.com/ontio/ontology/p2pserver/message/types"
-	netsvr "github.com/ontio/ontology/p2pserver/net/netserver"
-	// "github.com/ontio/ontology/p2pserver/net/protocol"
-	"github.com/ontio/ontology/p2pserver/peer"
+	// "github.com/ontio/ontology-tool/p2pserver/net/protocol"
+	"github.com/ontio/ontology-tool/p2pserver/peer"
 	"net"
 	"time"
 )
@@ -88,7 +88,7 @@ func (s *NetServer) init(conf *commCfg.P2PNodeConfig, version string) error {
 		return fmt.Errorf("[p2p]failed to create sync listener")
 	}
 
-	log4.Info("[p2p]init peer ID to ", s.base.Id.ToHexString())
+	log4.Info("[p2p]init peer ID to %s", s.base.Id.ToHexString())
 
 	return nil
 }
