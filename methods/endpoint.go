@@ -34,4 +34,5 @@ func init() {
 	core.OntTool.RegMethod("heartbeat", Heartbeat)
 	core.OntTool.RegMethod("heartbeatInterruptPing", HeartbeatInterruptPing)
 	core.OntTool.RegMethod("heartbeatInterruptPong", HeartbeatInterruptPong)
+	core.OntTool.RegMethod("dhtCapture", DHTCapture)
 }

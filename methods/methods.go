@@ -67,7 +67,7 @@ func Handshake() bool {
 		Remote   string
 		TestCase uint8
 	}
-	if err := getParamsFromJsonFile("./params/Handshake.json", &params); err != nil {
+	if err := getParamsFromJsonFile("Handshake.json", &params); err != nil {
 		_ = log4.Error("%s", err)
 		return false
 	}
@@ -96,7 +96,7 @@ func HandshakeWrongMsg() bool {
 		Remote   string
 		WrongMsg bool
 	}
-	if err := getParamsFromJsonFile("./params/HandshakeWrongMsg.json", &params); err != nil {
+	if err := getParamsFromJsonFile("HandshakeWrongMsg.json", &params); err != nil {
 		_ = log4.Error("%s", err)
 		return false
 	}
@@ -118,9 +118,9 @@ func HandshakeTimeout() bool {
 	var params struct {
 		Remote    string
 		BlockTime int
-		Retry int
+		Retry     int
 	}
-	if err := getParamsFromJsonFile("./params/HandshakeTimeout.json", &params); err != nil {
+	if err := getParamsFromJsonFile("HandshakeTimeout.json", &params); err != nil {
 		_ = log4.Error("%s", err)
 		return false
 	}
@@ -136,7 +136,7 @@ func HandshakeTimeout() bool {
 		return true
 	}
 
-	for i:=0; i< params.Retry; i++ {
+	for i := 0; i < params.Retry; i++ {
 		log4.Debug("connecting retry cnt %d", i)
 		common.SetHandshakeTimeout(0)
 		if err := ns.Connect(params.Remote); err != nil {
@@ -156,7 +156,7 @@ func Heartbeat() bool {
 		InitBlockHeight uint64
 		DispatchTime    int
 	}
-	if err := getParamsFromJsonFile("./params/Heartbeat.json", &params); err != nil {
+	if err := getParamsFromJsonFile("Heartbeat.json", &params); err != nil {
 		_ = log4.Error("%s", err)
 		return false
 	}
@@ -184,7 +184,7 @@ func HeartbeatInterruptPing() bool {
 		InterruptLastTime       int64
 		DispatchTime            int
 	}
-	if err := getParamsFromJsonFile("./params/HeartbeatInterruptPing.json", &params); err != nil {
+	if err := getParamsFromJsonFile("HeartbeatInterruptPing.json", &params); err != nil {
 		_ = log4.Error("%s", err)
 		return false
 	}
@@ -215,7 +215,7 @@ func HeartbeatInterruptPong() bool {
 		InterruptLastTime       int64
 		DispatchTime            int
 	}
-	if err := getParamsFromJsonFile("./params/HeartbeatInterruptPong.json", &params); err != nil {
+	if err := getParamsFromJsonFile("HeartbeatInterruptPong.json", &params); err != nil {
 		_ = log4.Error("%s", err)
 		return false
 	}
@@ -235,5 +235,11 @@ func HeartbeatInterruptPong() bool {
 	dispatch(params.DispatchTime)
 
 	log4.Info("heartbeat end!")
+	return true
+}
+
+func DHTCapture() bool {
+
+	log4.Info("dht capture success")
 	return true
 }

@@ -19,6 +19,7 @@ package main
 
 import (
 	"flag"
+	methods2 "github.com/ontio/ontology-tool/methods"
 	"math/rand"
 	"strings"
 	"time"
@@ -30,15 +31,17 @@ import (
 )
 
 var (
-	Version   string
-	Config    string //config file
-	LogConfig string //Log config file
-	Methods   string //Methods list in cmdline
+	Version      string
+	Config       string //config file
+	LogConfig    string //Log config file
+	ParamsConfig string // params file dir
+	Methods      string //Methods list in cmdline
 )
 
 func init() {
 	flag.StringVar(&Config, "cfg", "./config.json", "Config of ontology-tool")
 	flag.StringVar(&LogConfig, "lfg", "./log4go.xml", "Log config of ontology-tool")
+	flag.StringVar(&ParamsConfig, "pfg", "./params", "Test params")
 	flag.StringVar(&Methods, "t", "handshake", "methods to run. use ',' to split methods")
 	flag.Parse()
 }
@@ -46,6 +49,7 @@ func init() {
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	log4.LoadConfiguration(LogConfig)
+	methods2.SetParamsDir(ParamsConfig)
 	defer time.Sleep(time.Second)
 
 	err := config.DefConfig.Init(Config)

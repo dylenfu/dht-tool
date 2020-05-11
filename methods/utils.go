@@ -21,11 +21,19 @@ package methods
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"time"
 )
 
+var paramsFileDir string
+
+func SetParamsDir(path string) {
+	paramsFileDir = path
+}
+
 func getParamsFromJsonFile(fileName string, data interface{}) error {
-	bz, err := ioutil.ReadFile(fileName)
+	fullPath := paramsFileDir + string(os.PathSeparator) + fileName
+	bz, err := ioutil.ReadFile(fullPath)
 	if err != nil {
 		return err
 	}
