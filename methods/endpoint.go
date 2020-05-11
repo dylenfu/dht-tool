@@ -34,6 +34,7 @@ func init() {
 	core.OntTool.RegMethod("heartbeat", Heartbeat)
 	core.OntTool.RegMethod("heartbeatInterruptPing", HeartbeatInterruptPing)
 	core.OntTool.RegMethod("heartbeatInterruptPong", HeartbeatInterruptPong)
+	core.OntTool.RegMethod("resetPeerID", ResetPeerID)
 	core.OntTool.RegMethod("ddos", DDos)
 	core.OntTool.RegMethod("invalidBlockHeight", InvalidBlockHeight)
 	core.OntTool.RegMethod("attackRoutable", AttackRoutable)

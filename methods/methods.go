@@ -238,6 +238,12 @@ func HeartbeatInterruptPong() bool {
 	return true
 }
 
+// todo
+func ResetPeerID() bool {
+	return true
+}
+
+// todo
 // ddos 攻击
 func DDos() bool {
 
@@ -245,21 +251,25 @@ func DDos() bool {
 	return true
 }
 
+// todo
 // 异常块高
 func InvalidBlockHeight() bool {
 	return true
 }
 
+// todo
 // 路由表攻击
 func AttackRoutable() bool {
 	return true
 }
 
+// todo
 // 非法交易攻击
 func AttackTxPool() bool {
 	return true
 }
 
+// todo
 // 双花
 func DoubleSpend() bool {
 	return true
