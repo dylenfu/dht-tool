@@ -1,6 +1,16 @@
 # dth-tool ontology p2pserver 测试工具
 
-### 握手测试参数
+## 测试用例
+```dtd
+handshake               // 握手
+handshakeTimeout        // 握手超时测试
+handshakeWrongMsg       // 握手客户端发送错误信息
+heartbeat               // 心跳持续测试
+heartbeatBreak          // 心跳断开测试
+```
+
+## 测试参数:
+#### 1.握手测试参数
  params/Handshake.json
 
 ```dtd

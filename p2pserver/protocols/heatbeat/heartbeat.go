@@ -34,6 +34,7 @@ type HeartBeat struct {
 	id     common.PeerId
 	quit   chan bool
 	height uint64
+	start  int64
 }
 
 func NewHeartBeat(net p2p.P2P) *HeartBeat {
@@ -42,6 +43,7 @@ func NewHeartBeat(net p2p.P2P) *HeartBeat {
 		net:    net,
 		quit:   make(chan bool),
 		height: tcm.HeartbeatBlockHeight,
+		start:  time.Now().Unix(),
 	}
 }
 
@@ -70,6 +72,10 @@ func (this *HeartBeat) heartBeatService() {
 
 // mark:
 func (this *HeartBeat) ping() {
+	if this.NeedInterrupt(true) {
+		return
+	}
+
 	height := this.height
 	// todo how to increase block height
 	//atomic.AddUint64(&this.height, 1)
@@ -92,6 +98,11 @@ func (this *HeartBeat) timeout() {
 }
 
 func (this *HeartBeat) PingHandle(ctx *p2p.Context, ping *types.Ping) {
+	// mark:
+	if this.NeedInterrupt(false) {
+		return
+	}
+
 	remotePeer := ctx.Sender()
 	remotePeer.SetHeight(ping.Height)
 	p2p := ctx.Network()
@@ -109,4 +120,21 @@ func (this *HeartBeat) PingHandle(ctx *p2p.Context, ping *types.Ping) {
 func (this *HeartBeat) PongHandle(ctx *p2p.Context, pong *types.Pong) {
 	remotePeer := ctx.Network()
 	remotePeer.SetHeight(pong.Height)
+}
+
+func (this *HeartBeat) NeedInterrupt(iscli bool) bool {
+	lastTime := tcm.HeartbeatInterruptClientLastTime
+	if !iscli {
+		lastTime = tcm.HeartbeatInterruptServerLastTime
+	}
+
+	breakAfterStart := tcm.HeartbeatInterruptAfterStartTime
+	now := time.Now().Unix()
+	start := this.start + breakAfterStart
+	end := this.start + breakAfterStart + lastTime
+
+	if breakAfterStart > 0 && now > start && now < end {
+		return true
+	}
+	return false
 }

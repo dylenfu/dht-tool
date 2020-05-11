@@ -1,0 +1,7 @@
+{
+  "Remote": "172.168.3.158:20338",
+  "InitBlockHeight": 4962,
+  "InterruptAfterStartTime": 20,
+  "InterruptLastTime": 15,
+  "DispatchTime": 60
+}

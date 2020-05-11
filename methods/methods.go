@@ -80,11 +80,10 @@ func Handshake() bool {
 
 	// 4. connect and handshake
 	if err := ns.Connect(params.Remote); err != nil {
-		_ = log4.Error("connecting to %s failed, err: %s", params.Remote, err)
-		return false
+		log4.Debug("connecting to %s failed, err: %s", params.Remote, err)
+	} else {
+		log4.Info("handshake end!")
 	}
-
-	log4.Info("handshake end!")
 
 	return true
 }
@@ -106,18 +105,17 @@ func HandshakeWrongMsg() bool {
 
 	common.SetHandshakeWrongMsg(params.WrongMsg)
 	if err := ns.Connect(params.Remote); err != nil {
-		_ = log4.Error("connecting to %s failed, err: %s", params.Remote, err)
-		return false
+		log4.Debug("connecting to %s failed, err: %s", params.Remote, err)
+	} else {
+		log4.Info("handshakeWrongMsg end!")
 	}
-
-	log4.Info("handshakeWrongMsg end!")
 
 	return true
 }
 
 func HandshakeTimeout() bool {
 	var params struct {
-		Remote   string
+		Remote  string
 		Timeout int
 	}
 	if err := getParamsFromJsonFile("./params/HandshakeTimeout.json", &params); err != nil {
@@ -130,20 +128,19 @@ func HandshakeTimeout() bool {
 
 	common.SetHandshakeTestDuraion(params.Timeout)
 	if err := ns.Connect(params.Remote); err != nil {
-		_ = log4.Error("connecting to %s failed, err: %s", params.Remote, err)
-		return false
+		log4.Debug("connecting to %s failed, err: %s", params.Remote, err)
+	} else {
+		log4.Info("handshakeTimeout end!")
 	}
-
-	log4.Info("handshakeTimeout end!")
 
 	return true
 }
 
 func Heartbeat() bool {
 	var params struct {
-		Remote   string
+		Remote          string
 		InitBlockHeight uint64
-		DispatchTime int
+		DispatchTime    int
 	}
 	if err := getParamsFromJsonFile("./params/Heartbeat.json", &params); err != nil {
 		_ = log4.Error("%s", err)
@@ -154,6 +151,69 @@ func Heartbeat() bool {
 	setup(protocol)
 
 	common.SetHeartbeatTestBlockHeight(params.InitBlockHeight)
+	if err := ns.Connect(params.Remote); err != nil {
+		_ = log4.Error("connecting to %s failed, err: %s", params.Remote, err)
+		return false
+	}
+
+	dispatch(params.DispatchTime)
+
+	log4.Info("heartbeat end!")
+	return true
+}
+
+func HeartbeatClientInterrupt() bool {
+	var params struct {
+		Remote                  string
+		InitBlockHeight         uint64
+		InterruptAfterStartTime int64
+		InterruptLastTime       int64
+		DispatchTime            int
+	}
+	if err := getParamsFromJsonFile("./params/HeartbeatClientInterrupt.json", &params); err != nil {
+		_ = log4.Error("%s", err)
+		return false
+	}
+
+	common.SetHeartbeatTestBlockHeight(params.InitBlockHeight)
+	common.SetHeartbeatTestInterruptAfterStartTime(params.InterruptAfterStartTime)
+	common.SetHeartbeatTestInterruptClientLastTime(params.InterruptLastTime)
+
+	protocol := protocols.NewOnlyHeartbeatMsgHandler()
+	setup(protocol)
+
+	if err := ns.Connect(params.Remote); err != nil {
+		_ = log4.Error("connecting to %s failed, err: %s", params.Remote, err)
+		return false
+	}
+
+	dispatch(params.DispatchTime)
+
+	log4.Info("heartbeat end!")
+	return true
+}
+
+
+func HeartbeatServerInterrupt() bool {
+	var params struct {
+		Remote                  string
+		InitBlockHeight         uint64
+		InterruptAfterStartTime int64
+		InterruptLastTime       int64
+		DispatchTime            int
+	}
+	if err := getParamsFromJsonFile("./params/HeartbeatServerInterrupt.json", &params); err != nil {
+		_ = log4.Error("%s", err)
+		return false
+	}
+
+	common.SetHeartbeatTestBlockHeight(params.InitBlockHeight)
+	common.SetHeartbeatTestInterruptAfterStartTime(params.InterruptAfterStartTime)
+	common.SetHeartbeatTestInterruptServerLastTime(params.InterruptLastTime)
+
+	protocol := protocols.NewOnlyHeartbeatMsgHandler()
+	setup(protocol)
+
 	if err := ns.Connect(params.Remote); err != nil {
 		_ = log4.Error("connecting to %s failed, err: %s", params.Remote, err)
 		return false

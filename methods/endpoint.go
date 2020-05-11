@@ -32,4 +32,6 @@ func init() {
 	core.OntTool.RegMethod("handshakeTimeout", HandshakeTimeout)
 	core.OntTool.RegMethod("handshakeWrongMsg", HandshakeWrongMsg)
 	core.OntTool.RegMethod("heartbeat", Heartbeat)
+	core.OntTool.RegMethod("heartbeatClientInterrupt", HeartbeatClientInterrupt)
+	core.OntTool.RegMethod("heartbeatServerInterrupt", HeartbeatServerInterrupt)
 }
