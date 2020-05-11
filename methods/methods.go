@@ -47,6 +47,7 @@ func setup(protocol p2p.Protocol) {
 }
 
 func reset() {
+	log4.Debug("[GC] end testing, stop server and clear instance...")
 	ns.Stop()
 	common.Reset()
 	ns = nil
@@ -117,6 +118,7 @@ func HandshakeTimeout() bool {
 	var params struct {
 		Remote    string
 		BlockTime int
+		Retry int
 	}
 	if err := getParamsFromJsonFile("./params/HandshakeTimeout.json", &params); err != nil {
 		_ = log4.Error("%s", err)
@@ -130,7 +132,19 @@ func HandshakeTimeout() bool {
 	if err := ns.Connect(params.Remote); err != nil {
 		log4.Debug("connecting to %s failed, err: %s", params.Remote, err)
 	} else {
-		log4.Info("handshakeTimeout end!")
+		log4.Info("handshake success!")
+		return true
+	}
+
+	for i:=0; i< params.Retry; i++ {
+		log4.Debug("connecting retry cnt %d", i)
+		common.SetHandshakeTimeout(0)
+		if err := ns.Connect(params.Remote); err != nil {
+			log4.Debug("connecting to %s failed, err: %s", params.Remote, err)
+		} else {
+			log4.Info("handshake success!")
+			return true
+		}
 	}
 
 	return true
