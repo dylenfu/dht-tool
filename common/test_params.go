@@ -38,7 +38,7 @@ const (
 var (
 	HandshakeLevel                   uint8
 	HandshakeWrongMsg                bool
-	HandshakeDuration                time.Duration
+	HandshakeTimeout                 time.Duration
 	HeartbeatBlockHeight             uint64
 	HeartbeatInterruptAfterStartTime int64
 	HeartbeatInterruptPingLastTime   int64
@@ -46,19 +46,19 @@ var (
 )
 
 var (
-	DefHandshakeStopLevel               uint8  = HandshakeNormal
-	DefHandshakeWrongMsg                       = false
-	DefHandshakeTimeout                        = time.Duration(10) * time.Second
-	DefHeartbeatBlockHeight             uint64 = 9442
-	DefHeartbeatInterruptAfterStartTime int64  = 0
-	DefHeartbeatInterruptPingLastTime   int64  = 0
-	DefHeartbeatInterruptPongLastTime   int64  = 0
+	DefHandshakeStopLevel               uint8         = HandshakeNormal
+	DefHandshakeWrongMsg                              = false
+	DefHandshakeTimeout                 time.Duration = time.Duration(0)
+	DefHeartbeatBlockHeight             uint64        = 9442
+	DefHeartbeatInterruptAfterStartTime int64         = 0
+	DefHeartbeatInterruptPingLastTime   int64         = 0
+	DefHeartbeatInterruptPongLastTime   int64         = 0
 )
 
 func InitializeTestParams() {
 	HandshakeLevel = DefHandshakeStopLevel
 	HandshakeWrongMsg = DefHandshakeWrongMsg
-	HandshakeDuration = DefHandshakeTimeout
+	HandshakeTimeout = DefHandshakeTimeout
 	HeartbeatBlockHeight = DefHeartbeatBlockHeight
 	HeartbeatInterruptAfterStartTime = DefHeartbeatInterruptAfterStartTime
 	HeartbeatInterruptPingLastTime = DefHeartbeatInterruptPingLastTime
@@ -83,8 +83,8 @@ func SetHandshakeWrongMsg(active bool) {
 }
 
 // handshake timeout
-func SetHandshakeTestDuraion(sec int) {
-	HandshakeDuration = time.Duration(sec) * time.Second
+func SetHandshakeTimeout(sec int) {
+	HandshakeTimeout = time.Duration(sec) * time.Second
 }
 
 // heartbeat

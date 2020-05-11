@@ -29,9 +29,11 @@ import (
 	"time"
 )
 
+var HANDSHAKE_DURATION = 10 * time.Second // handshake time can not exceed this duration, or will treat as attack.
 func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Conn) (*peer.PeerInfo, error) {
 	version := newVersion(info)
-	if err := conn.SetDeadline(time.Now().Add(tcm.HandshakeDuration)); err != nil {
+
+	if err := conn.SetDeadline(time.Now().Add(HANDSHAKE_DURATION)); err != nil {
 		return nil, err
 	}
 	defer func() {
@@ -54,6 +56,11 @@ func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 	// mark:
 	if tcm.ValidateHandshakeStopLevel(tcm.Handshake_StopClientAfterSendVersion) {
 		return nil, fmt.Errorf("client handshake stopped after send version")
+	}
+
+	// mark:
+	if tcm.HandshakeTimeout > 0 {
+		time.Sleep(tcm.HandshakeTimeout)
 	}
 
 	// 2. read version
@@ -123,7 +130,7 @@ func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 
 func HandshakeServer(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Conn) (*peer.PeerInfo, error) {
 	ver := newVersion(info)
-	if err := conn.SetDeadline(time.Now().Add(tcm.HandshakeDuration)); err != nil {
+	if err := conn.SetDeadline(time.Now().Add(tcm.HandshakeTimeout)); err != nil {
 		return nil, err
 	}
 	defer func() {

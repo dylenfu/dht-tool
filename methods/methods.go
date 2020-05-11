@@ -115,8 +115,8 @@ func HandshakeWrongMsg() bool {
 
 func HandshakeTimeout() bool {
 	var params struct {
-		Remote  string
-		Timeout int
+		Remote    string
+		BlockTime int
 	}
 	if err := getParamsFromJsonFile("./params/HandshakeTimeout.json", &params); err != nil {
 		_ = log4.Error("%s", err)
@@ -126,7 +126,7 @@ func HandshakeTimeout() bool {
 	protocol := protocols.NewOnlyHeartbeatMsgHandler()
 	setup(protocol)
 
-	common.SetHandshakeTestDuraion(params.Timeout)
+	common.SetHandshakeTimeout(params.BlockTime)
 	if err := ns.Connect(params.Remote); err != nil {
 		log4.Debug("connecting to %s failed, err: %s", params.Remote, err)
 	} else {
