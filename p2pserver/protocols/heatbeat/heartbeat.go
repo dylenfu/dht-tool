@@ -55,6 +55,7 @@ func (self *HeartBeat) Start() {
 func (self *HeartBeat) Stop() {
 	close(self.quit)
 }
+
 func (this *HeartBeat) heartBeatService() {
 	var periodTime uint = config.DEFAULT_GEN_BLOCK_TIME / common.UPDATE_RATE_PER_BLOCK
 	t := time.NewTicker(time.Second * (time.Duration(periodTime)))
@@ -78,10 +79,10 @@ func (this *HeartBeat) ping() {
 		return
 	}
 
-	height := atomic.AddUint64(&this.height, 1)
+	height := this.height
 	ping := msgpack.NewPingMsg(uint64(height))
 	go this.net.Broadcast(ping)
-	log4.Debug("[p2p]ping msg height %d", height)
+	log4.Debug("[p2p]send ping msg height %d", height)
 }
 
 //timeout trace whether some peer be long time no response
@@ -117,12 +118,14 @@ func (this *HeartBeat) PingHandle(ctx *p2p.Context, ping *types.Ping) {
 	if err != nil {
 		log4.Warn(err)
 	}
-	log4.Debug("[p2p]pong msg height %d", height)
+	log4.Debug("[p2p]recv pong msg height %d", height)
 }
 
 func (this *HeartBeat) PongHandle(ctx *p2p.Context, pong *types.Pong) {
 	remotePeer := ctx.Network()
 	remotePeer.SetHeight(pong.Height)
+	// mark:
+	atomic.AddUint64(&this.height, 1)
 }
 
 func (this *HeartBeat) NeedInterrupt(iscli bool) bool {
