@@ -33,11 +33,6 @@ var (
 	tr *timer.Timer
 )
 
-func Demo() bool {
-	log4.Info("hello, dht demo")
-	return true
-}
-
 func setup(protocol p2p.Protocol) {
 	var err error
 
@@ -51,22 +46,33 @@ func setup(protocol p2p.Protocol) {
 	tr = timer.NewTimer(2)
 }
 
+func reset() {
+	ns.Stop()
+	common.Reset()
+	ns = nil
+	tr = nil
+}
+
+// methods
+func Demo() bool {
+	log4.Info("hello, dht demo")
+	return true
+}
+
 func Handshake() bool {
 
 	// 1. get params from json file
 	var params struct {
-		Remote        string
-		HeartbeatTime int
+		Remote   string
+		TestCase uint8
 	}
 	if err := getParamsFromJsonFile("./params/Handshake.json", &params); err != nil {
-		log4.Error("%s", err)
+		_ = log4.Error("%s", err)
 		return false
 	}
 
 	// 2. set common params
-	common.SetHandshakeDuraion(10)
-	common.SetHandshakeLevel(common.HandshakeNormal)
-	common.SetHeartbeatBlockHeight(358)
+	common.SetHandshakeStopLevel(params.TestCase)
 
 	// 3. setup p2p.protocols
 	protocol := protocols.NewOnlyHeartbeatMsgHandler()
@@ -74,13 +80,87 @@ func Handshake() bool {
 
 	// 4. connect and handshake
 	if err := ns.Connect(params.Remote); err != nil {
-		log4.Debug("connecting to %s failed, err: %s", params.Remote, err)
+		_ = log4.Error("connecting to %s failed, err: %s", params.Remote, err)
 		return false
 	}
 
-	// 5. dispatch
-	dispatch(params.HeartbeatTime)
 	log4.Info("handshake end!")
 
+	return true
+}
+
+func HandshakeWrongMsg() bool {
+
+	// 1. get params from json file
+	var params struct {
+		Remote   string
+		WrongMsg bool
+	}
+	if err := getParamsFromJsonFile("./params/HandshakeWrongMsg.json", &params); err != nil {
+		_ = log4.Error("%s", err)
+		return false
+	}
+
+	protocol := protocols.NewOnlyHeartbeatMsgHandler()
+	setup(protocol)
+
+	common.SetHandshakeWrongMsg(params.WrongMsg)
+	if err := ns.Connect(params.Remote); err != nil {
+		_ = log4.Error("connecting to %s failed, err: %s", params.Remote, err)
+		return false
+	}
+
+	log4.Info("handshakeWrongMsg end!")
+
+	return true
+}
+
+func HandshakeTimeout() bool {
+	var params struct {
+		Remote   string
+		Timeout int
+	}
+	if err := getParamsFromJsonFile("./params/HandshakeTimeout.json", &params); err != nil {
+		_ = log4.Error("%s", err)
+		return false
+	}
+
+	protocol := protocols.NewOnlyHeartbeatMsgHandler()
+	setup(protocol)
+
+	common.SetHandshakeTestDuraion(params.Timeout)
+	if err := ns.Connect(params.Remote); err != nil {
+		_ = log4.Error("connecting to %s failed, err: %s", params.Remote, err)
+		return false
+	}
+
+	log4.Info("handshakeTimeout end!")
+
+	return true
+}
+
+func Heartbeat() bool {
+	var params struct {
+		Remote   string
+		InitBlockHeight uint64
+		DispatchTime int
+	}
+	if err := getParamsFromJsonFile("./params/Heartbeat.json", &params); err != nil {
+		_ = log4.Error("%s", err)
+		return false
+	}
+
+	protocol := protocols.NewOnlyHeartbeatMsgHandler()
+	setup(protocol)
+
+	common.SetHeartbeatTestBlockHeight(params.InitBlockHeight)
+	if err := ns.Connect(params.Remote); err != nil {
+		_ = log4.Error("connecting to %s failed, err: %s", params.Remote, err)
+		return false
+	}
+
+	dispatch(params.DispatchTime)
+
+	log4.Info("heartbeat end!")
 	return true
 }

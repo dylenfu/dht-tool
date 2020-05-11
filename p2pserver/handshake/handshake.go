@@ -39,12 +39,20 @@ func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 	}()
 
 	// 1. sendMsg version
-	err := sendMsg(conn, version)
-	if err != nil {
-		return nil, err
+	if tcm.HandshakeWrongMsg {
+		err := sendMsg(conn, &types.Addr{})
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err := sendMsg(conn, version)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	// mark:
-	if tcm.StopHandshake(tcm.Handshake_StopAfterSendVersion) {
+	if tcm.ValidateHandshakeStopLevel(tcm.Handshake_StopClientAfterSendVersion) {
 		return nil, fmt.Errorf("client handshake stopped after send version")
 	}
 
@@ -58,7 +66,7 @@ func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 		return nil, fmt.Errorf("expected version message, but got message type: %s", msg.CmdType())
 	}
 	// mark:
-	if tcm.StopHandshake(tcm.Handshake_StopAfterReceiveVersion) {
+	if tcm.ValidateHandshakeStopLevel(tcm.Handshake_StopClientAfterReceiveVersion) {
 		return nil, fmt.Errorf("client handshake stopped after receive version")
 	}
 
@@ -70,7 +78,7 @@ func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 			return nil, err
 		}
 		// mark:
-		if tcm.StopHandshake(tcm.Handshake_StopAfterUpdateKad) {
+		if tcm.ValidateHandshakeStopLevel(tcm.Handshake_StopClientAfterUpdateKad) {
 			return nil, fmt.Errorf("client handshake stopped after update kad")
 		}
 
@@ -84,7 +92,7 @@ func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 			return nil, fmt.Errorf("handshake failed, expect kad id message, got %s", msg.CmdType())
 		}
 		// mark:
-		if tcm.StopHandshake(tcm.Handshake_StopAfterReadKad) {
+		if tcm.ValidateHandshakeStopLevel(tcm.Handshake_StopClientAfterReadKad) {
 			return nil, fmt.Errorf("client handshake stopped after read kad")
 		}
 
@@ -97,7 +105,7 @@ func HandshakeClient(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 		return nil, err
 	}
 	// mark:
-	if tcm.StopHandshake(tcm.Handshake_StopAfterSendAck) {
+	if tcm.ValidateHandshakeStopLevel(tcm.Handshake_StopClientAfterSendAck) {
 		return nil, fmt.Errorf("client handshake stopped after send ack")
 	}
 
@@ -132,7 +140,7 @@ func HandshakeServer(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 	}
 	version := msg.(*types.Version)
 	// mark:
-	if tcm.StopHandshake(tcm.Handshake_StopAfterReceiveVersion) {
+	if tcm.ValidateHandshakeStopLevel(tcm.Handshake_StopServerAfterReceiveVersion) {
 		return nil, fmt.Errorf("server handshake stopped after receive version")
 	}
 
@@ -142,7 +150,7 @@ func HandshakeServer(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 		return nil, err
 	}
 	// mark:
-	if tcm.StopHandshake(tcm.Handshake_StopAfterSendVersion) {
+	if tcm.ValidateHandshakeStopLevel(tcm.Handshake_StopServerAfterSendVersion) {
 		return nil, fmt.Errorf("server handshake stopped after send version")
 	}
 
@@ -159,7 +167,7 @@ func HandshakeServer(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 		}
 		kid = kadkeyId.KadKeyId.Id
 		// mark:
-		if tcm.StopHandshake(tcm.Handshake_StopAfterReadKad) {
+		if tcm.ValidateHandshakeStopLevel(tcm.Handshake_StopServerAfterReadKad) {
 			return nil, fmt.Errorf("server handshake stopped after read kad")
 		}
 
@@ -169,7 +177,7 @@ func HandshakeServer(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 			return nil, err
 		}
 		// mark:
-		if tcm.StopHandshake(tcm.Handshake_StopAfterUpdateKad) {
+		if tcm.ValidateHandshakeStopLevel(tcm.Handshake_StopServerAfterUpdateKad) {
 			return nil, fmt.Errorf("server handshake stopped after update kad")
 		}
 	}
@@ -183,7 +191,7 @@ func HandshakeServer(info *peer.PeerInfo, selfId *common.PeerKeyId, conn net.Con
 		return nil, fmt.Errorf("[HandshakeServer] expected version ack message")
 	}
 	// mark:
-	if tcm.StopHandshake(tcm.Handshake_StopAfterReadAck) {
+	if tcm.ValidateHandshakeStopLevel(tcm.Handshake_StopServerAfterReadAck) {
 		return nil, fmt.Errorf("server handshake stopped after read ack")
 	}
 

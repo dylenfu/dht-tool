@@ -275,7 +275,7 @@ func (this *NetServer) startNetAccept(listener net.Listener) {
 		conn, err := listener.Accept()
 
 		if err != nil {
-			log4.Error("[p2p]error accepting ", err.Error())
+			log4.Error("[p2p]error accepting %s", err.Error())
 			return
 		}
 

@@ -25,12 +25,15 @@ import (
 var OntTool = NewOntologyTool()
 
 type Method func() bool
+type GcFunc func()
 
 type OntologyTool struct {
 	//Map name to method
 	methodsMap map[string]Method
 	//Map method result
 	methodsRes map[string]bool
+	//gc func
+	gc GcFunc
 }
 
 func NewOntologyTool() *OntologyTool {
@@ -42,6 +45,10 @@ func NewOntologyTool() *OntologyTool {
 
 func (this *OntologyTool) RegMethod(name string, method Method) {
 	this.methodsMap[name] = method
+}
+
+func (this *OntologyTool) RegGCFunc(fn GcFunc) {
+	this.gc = fn
 }
 
 //Start run
@@ -69,6 +76,7 @@ func (this *OntologyTool) runMethod(index int, methodName string) {
 		ok := method()
 		this.onAfterMethodFinish(index, methodName, ok)
 		this.methodsRes[methodName] = ok
+		this.gc()
 	}
 }
 

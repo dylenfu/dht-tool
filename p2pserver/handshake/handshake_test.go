@@ -18,21 +18,18 @@
 package handshake
 
 import (
-	"math/rand"
-	"net"
-	"sync"
-	"testing"
-	"time"
-
 	"github.com/ontio/ontology-tool/p2pserver/common"
 	"github.com/ontio/ontology-tool/p2pserver/message/types"
 	"github.com/ontio/ontology-tool/p2pserver/peer"
 	"github.com/stretchr/testify/assert"
+	"math/rand"
+	"net"
+	"sync"
+	"testing"
 )
 
 func init() {
 	common.Difficulty = 1
-	HANDSHAKE_DURATION = 1 * time.Second
 }
 
 type Node struct {

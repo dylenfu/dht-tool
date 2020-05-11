@@ -23,31 +23,62 @@ import "time"
 // handshake test cases
 const (
 	HandshakeNormal = iota
-	Handshake_StopAfterSendVersion
-	Handshake_StopAfterReceiveVersion
-	Handshake_StopAfterUpdateKad
-	Handshake_StopAfterReadKad
-	Handshake_StopAfterSendAck
-	Handshake_StopAfterReadAck
+	Handshake_StopClientAfterSendVersion
+	Handshake_StopClientAfterReceiveVersion
+	Handshake_StopClientAfterUpdateKad
+	Handshake_StopClientAfterReadKad
+	Handshake_StopClientAfterSendAck
+	Handshake_StopServerAfterSendVersion
+	Handshake_StopServerAfterReceiveVersion
+	Handshake_StopServerAfterUpdateKad
+	Handshake_StopServerAfterReadKad
+	Handshake_StopServerAfterReadAck
 )
 
 var (
-	HandshakeLevel    uint8         = HandshakeNormal                 // default normal
-	HandshakeDuration time.Duration = time.Duration(10) * time.Second // default value: 10 sec
+	HandshakeLevel uint8
+	HandshakeWrongMsg bool
+	HandshakeDuration time.Duration
+	HeartbeatBlockHeight uint64
 )
 
-func SetHandshakeLevel(lvl uint8) {
+var (
+	DefHandshakeStopLevel uint8 = HandshakeNormal
+	DefHandshakeWrongMsg = false
+	DefHandshakeTimeout = time.Duration(10) * time.Second
+	DefHeartbeatBlockHeight uint64= 9442
+)
+
+func InitializeTestParams() {
+	HandshakeLevel = DefHandshakeStopLevel
+	HandshakeWrongMsg = DefHandshakeWrongMsg
+	HandshakeDuration = DefHandshakeTimeout
+	HeartbeatBlockHeight = DefHeartbeatBlockHeight
+}
+
+func Reset() {
+	InitializeTestParams()
+}
+
+// handshake stop level
+func SetHandshakeStopLevel(lvl uint8) {
 	HandshakeLevel = lvl
 }
-func StopHandshake(lvl uint8) bool {
+func ValidateHandshakeStopLevel(lvl uint8) bool {
 	return HandshakeLevel == lvl
 }
-func SetHandshakeDuraion(sec int) {
+
+// handshake wrong msg
+func SetHandshakeWrongMsg(active bool) {
+	HandshakeWrongMsg = active
+}
+
+// handshake timeout
+func SetHandshakeTestDuraion(sec int) {
 	HandshakeDuration = time.Duration(sec) * time.Second
 }
 
-// heartbeat test cases
-var HeartbeatBlockHeight uint64 = 358 // default 100000
-func SetHeartbeatBlockHeight(height uint64) {
+// heartbeat
+func SetHeartbeatTestBlockHeight(height uint64) {
 	HeartbeatBlockHeight = height
 }
