@@ -18,6 +18,7 @@
 package heatbeat
 
 import (
+	"sync/atomic"
 	"time"
 
 	log4 "github.com/alecthomas/log4go"
@@ -73,14 +74,14 @@ func (this *HeartBeat) heartBeatService() {
 // mark:
 func (this *HeartBeat) ping() {
 	if this.NeedInterrupt(true) {
+		log4.Debug("[p2p]interrupt ping...")
 		return
 	}
 
-	height := this.height
-	// todo how to increase block height
-	//atomic.AddUint64(&this.height, 1)
+	height := atomic.AddUint64(&this.height, 1)
 	ping := msgpack.NewPingMsg(uint64(height))
 	go this.net.Broadcast(ping)
+	log4.Debug("[p2p]ping msg height %d", height)
 }
 
 //timeout trace whether some peer be long time no response
@@ -100,6 +101,7 @@ func (this *HeartBeat) timeout() {
 func (this *HeartBeat) PingHandle(ctx *p2p.Context, ping *types.Ping) {
 	// mark:
 	if this.NeedInterrupt(false) {
+		log4.Debug("[p2p]interrupt pong...")
 		return
 	}
 
@@ -115,6 +117,7 @@ func (this *HeartBeat) PingHandle(ctx *p2p.Context, ping *types.Ping) {
 	if err != nil {
 		log4.Warn(err)
 	}
+	log4.Debug("[p2p]pong msg height %d", height)
 }
 
 func (this *HeartBeat) PongHandle(ctx *p2p.Context, pong *types.Pong) {
@@ -123,9 +126,9 @@ func (this *HeartBeat) PongHandle(ctx *p2p.Context, pong *types.Pong) {
 }
 
 func (this *HeartBeat) NeedInterrupt(iscli bool) bool {
-	lastTime := tcm.HeartbeatInterruptClientLastTime
+	lastTime := tcm.HeartbeatInterruptPingLastTime
 	if !iscli {
-		lastTime = tcm.HeartbeatInterruptServerLastTime
+		lastTime = tcm.HeartbeatInterruptPongLastTime
 	}
 
 	breakAfterStart := tcm.HeartbeatInterruptAfterStartTime

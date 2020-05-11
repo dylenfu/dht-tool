@@ -162,7 +162,7 @@ func Heartbeat() bool {
 	return true
 }
 
-func HeartbeatClientInterrupt() bool {
+func HeartbeatInterruptPing() bool {
 	var params struct {
 		Remote                  string
 		InitBlockHeight         uint64
@@ -170,14 +170,14 @@ func HeartbeatClientInterrupt() bool {
 		InterruptLastTime       int64
 		DispatchTime            int
 	}
-	if err := getParamsFromJsonFile("./params/HeartbeatClientInterrupt.json", &params); err != nil {
+	if err := getParamsFromJsonFile("./params/HeartbeatInterruptPing.json", &params); err != nil {
 		_ = log4.Error("%s", err)
 		return false
 	}
 
 	common.SetHeartbeatTestBlockHeight(params.InitBlockHeight)
 	common.SetHeartbeatTestInterruptAfterStartTime(params.InterruptAfterStartTime)
-	common.SetHeartbeatTestInterruptClientLastTime(params.InterruptLastTime)
+	common.SetHeartbeatTestInterruptPingLastTime(params.InterruptLastTime)
 
 	protocol := protocols.NewOnlyHeartbeatMsgHandler()
 	setup(protocol)
@@ -193,8 +193,7 @@ func HeartbeatClientInterrupt() bool {
 	return true
 }
 
-
-func HeartbeatServerInterrupt() bool {
+func HeartbeatInterruptPong() bool {
 	var params struct {
 		Remote                  string
 		InitBlockHeight         uint64
@@ -202,14 +201,14 @@ func HeartbeatServerInterrupt() bool {
 		InterruptLastTime       int64
 		DispatchTime            int
 	}
-	if err := getParamsFromJsonFile("./params/HeartbeatServerInterrupt.json", &params); err != nil {
+	if err := getParamsFromJsonFile("./params/HeartbeatInterruptPong.json", &params); err != nil {
 		_ = log4.Error("%s", err)
 		return false
 	}
 
 	common.SetHeartbeatTestBlockHeight(params.InitBlockHeight)
 	common.SetHeartbeatTestInterruptAfterStartTime(params.InterruptAfterStartTime)
-	common.SetHeartbeatTestInterruptServerLastTime(params.InterruptLastTime)
+	common.SetHeartbeatTestInterruptPongLastTime(params.InterruptLastTime)
 
 	protocol := protocols.NewOnlyHeartbeatMsgHandler()
 	setup(protocol)

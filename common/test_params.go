@@ -41,18 +41,18 @@ var (
 	HandshakeDuration                time.Duration
 	HeartbeatBlockHeight             uint64
 	HeartbeatInterruptAfterStartTime int64
-	HeartbeatInterruptClientLastTime int64
-	HeartbeatInterruptServerLastTime int64
+	HeartbeatInterruptPingLastTime   int64
+	HeartbeatInterruptPongLastTime   int64
 )
 
 var (
-	DefHandshakeStopLevel           uint8  = HandshakeNormal
-	DefHandshakeWrongMsg                   = false
-	DefHandshakeTimeout                    = time.Duration(10) * time.Second
-	DefHeartbeatBlockHeight         uint64 = 9442
-	DefHeartbeatBreakAfterStartTime int64  = 0
-	DefHeartbeatBreakClientLastTime int64  = 0
-	DefHeartbeatBreakServerLastTime int64  = 0
+	DefHandshakeStopLevel               uint8  = HandshakeNormal
+	DefHandshakeWrongMsg                       = false
+	DefHandshakeTimeout                        = time.Duration(10) * time.Second
+	DefHeartbeatBlockHeight             uint64 = 9442
+	DefHeartbeatInterruptAfterStartTime int64  = 0
+	DefHeartbeatInterruptPingLastTime   int64  = 0
+	DefHeartbeatInterruptPongLastTime   int64  = 0
 )
 
 func InitializeTestParams() {
@@ -60,9 +60,9 @@ func InitializeTestParams() {
 	HandshakeWrongMsg = DefHandshakeWrongMsg
 	HandshakeDuration = DefHandshakeTimeout
 	HeartbeatBlockHeight = DefHeartbeatBlockHeight
-	HeartbeatInterruptAfterStartTime = DefHeartbeatBreakAfterStartTime
-	HeartbeatInterruptClientLastTime = DefHeartbeatBreakClientLastTime
-	HeartbeatInterruptServerLastTime = DefHeartbeatBreakServerLastTime
+	HeartbeatInterruptAfterStartTime = DefHeartbeatInterruptAfterStartTime
+	HeartbeatInterruptPingLastTime = DefHeartbeatInterruptPingLastTime
+	HeartbeatInterruptPongLastTime = DefHeartbeatInterruptPongLastTime
 }
 
 func Reset() {
@@ -94,9 +94,9 @@ func SetHeartbeatTestBlockHeight(height uint64) {
 func SetHeartbeatTestInterruptAfterStartTime(sec int64) {
 	HeartbeatInterruptAfterStartTime = sec
 }
-func SetHeartbeatTestInterruptClientLastTime(sec int64) {
-	HeartbeatInterruptClientLastTime = sec
+func SetHeartbeatTestInterruptPingLastTime(sec int64) {
+	HeartbeatInterruptPingLastTime = sec
 }
-func SetHeartbeatTestInterruptServerLastTime(sec int64) {
-	HeartbeatInterruptServerLastTime = sec
+func SetHeartbeatTestInterruptPongLastTime(sec int64) {
+	HeartbeatInterruptPongLastTime = sec
 }
