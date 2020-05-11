@@ -238,8 +238,29 @@ func HeartbeatInterruptPong() bool {
 	return true
 }
 
-func DHTCapture() bool {
+// ddos 攻击
+func DDos() bool {
 
-	log4.Info("dht capture success")
+	log4.Info("ddos attack end!")
+	return true
+}
+
+// 异常块高
+func InvalidBlockHeight() bool {
+	return true
+}
+
+// 路由表攻击
+func AttackRoutable() bool {
+	return true
+}
+
+// 非法交易攻击
+func AttackTxPool() bool {
+	return true
+}
+
+// 双花
+func DoubleSpend() bool {
 	return true
 }

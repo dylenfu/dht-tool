@@ -30,9 +30,5 @@ clean:
 	rm -rf *.8 *.o *.out *.6 *exe
 	rm -rf dht-tool dht-tool-*
 
-restart:
-	make clean && make dht-tool && ./dht-tool
-
-docker:
-	make clean && make
-	docker build -t dht:latest .
+remake:
+	make clean && make dht-tool
